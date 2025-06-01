@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, Edit, Plus } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import MainNavigation from '@/components/navigation/MainNavigation';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileProjects from '@/components/profile/ProfileProjects';
@@ -12,7 +13,7 @@ import EditProfileModal from '@/components/profile/EditProfileModal';
 import AddProjectModal from '@/components/profile/AddProjectModal';
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [projects, setProjects] = useState<any[]>([]);
@@ -64,22 +65,6 @@ const Profile = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cerrar sesión. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "¡Hasta luego!",
-        description: "Has cerrado sesión exitosamente.",
-      });
-    }
-  };
-
   const handleProfileUpdate = () => {
     fetchProfile();
     setIsEditModalOpen(false);
@@ -92,28 +77,20 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-social-gradient flex items-center justify-center">
-        <div className="text-white text-xl">Cargando perfil...</div>
+      <div className="min-h-screen bg-social-gradient">
+        <MainNavigation />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white text-xl">Cargando perfil...</div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-social-gradient">
+      <MainNavigation />
+      
       <div className="container mx-auto px-4 py-8">
-        {/* Header with logout button */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Mi Perfil</h1>
-          <Button
-            onClick={handleSignOut}
-            variant="outline"
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Cerrar Sesión
-          </Button>
-        </div>
-
         {/* Profile Header */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 mb-8">
           <div className="flex justify-between items-start mb-6">
@@ -121,10 +98,10 @@ const Profile = () => {
             <Button
               onClick={() => setIsEditModalOpen(true)}
               variant="outline"
-              className="text-white border-white/20 hover:bg-white/10"
+              className="text-white border-white/20 hover:bg-white/10 bg-transparent"
             >
               <Edit className="w-4 h-4 mr-2" />
-              Editar Perfil
+              <span className="text-white">Editar Perfil</span>
             </Button>
           </div>
 
@@ -140,7 +117,7 @@ const Profile = () => {
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Agregar Proyecto
+              <span className="text-white">Agregar Proyecto</span>
             </Button>
           </div>
 

@@ -1,102 +1,146 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import MainNavigation from '@/components/navigation/MainNavigation';
+import { User, Plus, Heart, MessageCircle, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, UserCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cerrar sesión. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "¡Hasta luego!",
-        description: "Has cerrado sesión exitosamente.",
-      });
+  // Posts de ejemplo para el feed
+  const feedPosts = [
+    {
+      id: 1,
+      author: {
+        name: "Ana García",
+        avatar: null,
+        occupation: "Desarrolladora Frontend"
+      },
+      content: "¡Acabo de terminar mi nuevo proyecto en React! 🚀 Es increíble lo mucho que he aprendido en este proceso.",
+      image: null,
+      likes: 24,
+      comments: 8,
+      timestamp: "hace 2 horas"
+    },
+    {
+      id: 2,
+      author: {
+        name: "Carlos López",
+        avatar: null,
+        occupation: "Diseñador UX/UI"
+      },
+      content: "Compartiendo algunos tips de diseño que me han ayudado mucho últimamente. ¿Cuáles son sus herramientas favoritas?",
+      image: null,
+      likes: 18,
+      comments: 12,
+      timestamp: "hace 4 horas"
     }
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-social-gradient p-4">
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">¡Bienvenido a FLORTE!</h1>
-          <div className="flex space-x-4">
-            <Button
-              onClick={() => navigate('/profile')}
-              variant="outline"
-              className="text-white border-white/20 hover:bg-white/10"
-            >
-              <UserCircle className="w-4 h-4 mr-2" />
-              Mi Perfil
-            </Button>
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              className="text-white border-white/20 hover:bg-white/10"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-social-gradient">
+      <MainNavigation />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Crear nuevo post */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-6">
+            <div className="flex items-center space-x-4">
+              <Avatar className="w-12 h-12 border-2 border-white/20">
+                <AvatarImage 
+                  src={user?.user_metadata?.avatar_url} 
+                  alt={user?.user_metadata?.full_name || 'Usuario'} 
+                />
+                <AvatarFallback className="bg-purple-500/20 text-white">
+                  <User className="w-6 h-6" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="¿Qué estás pensando?"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                {user?.user_metadata?.full_name || 'Usuario'}
-              </h2>
-              <p className="text-white/70">{user?.email}</p>
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex space-x-2">
+                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Imagen
+                </Button>
+              </div>
+              <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+                Publicar
+              </Button>
             </div>
           </div>
 
-          <div className="text-white/80">
-            <p className="text-lg mb-4">
-              ¡Tu cuenta ha sido creada exitosamente! 
+          {/* Feed de posts */}
+          <div className="space-y-6">
+            {feedPosts.map((post) => (
+              <div key={post.id} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                {/* Header del post */}
+                <div className="flex items-center space-x-4 mb-4">
+                  <Avatar className="w-10 h-10 border-2 border-white/20">
+                    <AvatarFallback className="bg-purple-500/20 text-white text-sm">
+                      <User className="w-5 h-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white">{post.author.name}</h3>
+                    <p className="text-white/70 text-sm">{post.author.occupation}</p>
+                  </div>
+                  <span className="text-white/60 text-sm">{post.timestamp}</span>
+                </div>
+
+                {/* Contenido del post */}
+                <p className="text-white/90 mb-4">{post.content}</p>
+
+                {/* Acciones del post */}
+                <div className="flex items-center space-x-6 pt-4 border-t border-white/10">
+                  <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                    <Heart className="w-4 h-4 mr-2" />
+                    {post.likes}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    {post.comments}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                    <Share className="w-4 h-4 mr-2" />
+                    Compartir
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mensaje de bienvenida para nuevos usuarios */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20 mt-8 text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">¡Bienvenido a FLORTE!</h2>
+            <p className="text-white/80 mb-6">
+              Conecta con profesionales, comparte tus proyectos y haz crecer tu red profesional
             </p>
-            <p className="mb-6">
-              Esta será tu página de inicio donde podrás conectar con el mundo infinito de posibilidades.
-            </p>
-            
-            <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-              <h3 className="text-lg font-semibold text-white mb-4">¿Qué puedes hacer?</h3>
-              <ul className="space-y-2 text-white/70">
-                <li>• Personaliza tu perfil con foto, información y enlaces</li>
-                <li>• Sube y muestra tus proyectos</li>
-                <li>• Conecta tus perfiles de GitHub y LinkedIn</li>
-                <li>• Explora proyectos de otros usuarios</li>
-              </ul>
-              
-              <Button
-                onClick={() => navigate('/profile')}
-                className="mt-6 bg-purple-500 hover:bg-purple-600 text-white"
+            <div className="flex justify-center space-x-4">
+              <Button 
+                variant="outline" 
+                className="text-white border-white/20 hover:bg-white/10"
+                onClick={() => window.location.href = '/profile'}
               >
-                <UserCircle className="w-4 h-4 mr-2" />
-                Ir a mi perfil
+                Completar Perfil
+              </Button>
+              <Button 
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+                onClick={() => window.location.href = '/groups'}
+              >
+                Explorar Grupos
               </Button>
             </div>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="fixed top-10 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="fixed bottom-10 right-10 w-48 h-48 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="fixed top-1/2 left-1/4 w-16 h-16 bg-pink-500/20 rounded-full blur-lg animate-bounce"></div>
       </div>
     </div>
   );
