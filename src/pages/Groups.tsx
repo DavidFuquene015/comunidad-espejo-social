@@ -1,12 +1,126 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import MainNavigation from '@/components/navigation/MainNavigation';
-import { Users, Plus, MessageCircle } from 'lucide-react';
+import { Users, Plus, MessageCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import CreateGroupModal from '@/components/groups/CreateGroupModal';
+
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+  background_image_url: string;
+  member_count: number;
+  is_member: boolean;
+  is_owner: boolean;
+}
 
 const Groups = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchGroups();
+    }
+  }, [user]);
+
+  const fetchGroups = async () => {
+    try {
+      // Fetch all groups with member count and user membership info
+      const { data: groupsData, error } = await supabase
+        .from('groups')
+        .select(`
+          *,
+          group_members!inner(count),
+          group_members!group_members_user_id_fkey(user_id, role)
+        `);
+
+      if (error) throw error;
+
+      const processedGroups = groupsData?.map(group => {
+        const memberCount = group.group_members?.[0]?.count || 0;
+        const userMembership = group.group_members?.find(m => m.user_id === user?.id);
+        
+        return {
+          id: group.id,
+          name: group.name,
+          description: group.description || '',
+          background_image_url: group.background_image_url || '',
+          member_count: memberCount,
+          is_member: !!userMembership,
+          is_owner: group.owner_id === user?.id
+        };
+      }) || [];
+
+      setGroups(processedGroups);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los grupos.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoinGroup = async (groupId: string) => {
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: groupId,
+          user_id: user?.id,
+          role: 'member'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Éxito!",
+        description: "Te has unido al grupo exitosamente.",
+      });
+
+      fetchGroups();
+    } catch (error) {
+      console.error('Error joining group:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo unir al grupo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEnterGroup = (groupId: string) => {
+    navigate(`/groups/${groupId}`);
+  };
+
+  const handleGroupCreated = () => {
+    setIsCreateModalOpen(false);
+    fetchGroups();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-social-gradient">
+        <MainNavigation />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white text-xl">Cargando grupos...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-social-gradient">
@@ -15,94 +129,90 @@ const Groups = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Grupos</h1>
-          <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+          <Button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-purple-500 hover:bg-purple-600 text-white"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Crear Grupo
           </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Placeholder for groups */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Desarrolladores</h3>
-                <p className="text-white/70 text-sm">124 miembros</p>
-              </div>
-            </div>
-            <p className="text-white/80 text-sm mb-4">
-              Grupo para compartir conocimientos sobre desarrollo de software
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full text-white border-white/20 hover:bg-white/10"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Unirse al Grupo
-            </Button>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Diseñadores UX/UI</h3>
-                <p className="text-white/70 text-sm">89 miembros</p>
-              </div>
-            </div>
-            <p className="text-white/80 text-sm mb-4">
-              Comunidad de diseñadores para compartir recursos y proyectos
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full text-white border-white/20 hover:bg-white/10"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Unirse al Grupo
-            </Button>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Emprendedores Tech</h3>
-                <p className="text-white/70 text-sm">56 miembros</p>
+          {groups.map((group) => (
+            <div key={group.id} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 relative overflow-hidden">
+              {group.background_image_url && (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-30"
+                  style={{ backgroundImage: `url(${group.background_image_url})` }}
+                />
+              )}
+              
+              <div className="relative z-10">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">{group.name}</h3>
+                    <p className="text-white/70 text-sm">{group.member_count} miembros</p>
+                  </div>
+                  {group.is_owner && (
+                    <Settings className="w-5 h-5 text-white/70" />
+                  )}
+                </div>
+                
+                <p className="text-white/80 text-sm mb-4 line-clamp-2">
+                  {group.description || 'Sin descripción'}
+                </p>
+                
+                {group.is_member ? (
+                  <Button 
+                    onClick={() => handleEnterGroup(group.id)}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Entrar al Grupo
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleJoinGroup(group.id)}
+                    variant="outline" 
+                    className="w-full text-white border-white/20 hover:bg-white/10"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Unirse al Grupo
+                  </Button>
+                )}
               </div>
             </div>
-            <p className="text-white/80 text-sm mb-4">
-              Red de networking para emprendedores del sector tecnológico
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full text-white border-white/20 hover:bg-white/10"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Unirse al Grupo
-            </Button>
-          </div>
+          ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <Users className="w-16 h-16 text-white/50 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">¿No encuentras tu grupo ideal?</h2>
-            <p className="text-white/70 mb-6">
-              Crea tu propio grupo y conecta con personas que comparten tus intereses
-            </p>
-            <Button className="bg-purple-500 hover:bg-purple-600 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Crear Nuevo Grupo
-            </Button>
+        {groups.length === 0 && (
+          <div className="mt-12 text-center">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <Users className="w-16 h-16 text-white/50 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">No hay grupos disponibles</h2>
+              <p className="text-white/70 mb-6">
+                Sé el primero en crear un grupo y conectar con personas que comparten tus intereses
+              </p>
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Crear Primer Grupo
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
+
+        <CreateGroupModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onGroupCreated={handleGroupCreated}
+        />
       </div>
     </div>
   );
