@@ -2,12 +2,14 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, UserCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -30,14 +32,24 @@ const Dashboard = () => {
       <div className="container mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-white">¡Bienvenido a FLORTE!</h1>
-          <Button
-            onClick={handleSignOut}
-            variant="outline"
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Cerrar Sesión
-          </Button>
+          <div className="flex space-x-4">
+            <Button
+              onClick={() => navigate('/profile')}
+              variant="outline"
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              <UserCircle className="w-4 h-4 mr-2" />
+              Mi Perfil
+            </Button>
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
@@ -57,9 +69,27 @@ const Dashboard = () => {
             <p className="text-lg mb-4">
               ¡Tu cuenta ha sido creada exitosamente! 
             </p>
-            <p>
+            <p className="mb-6">
               Esta será tu página de inicio donde podrás conectar con el mundo infinito de posibilidades.
             </p>
+            
+            <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-4">¿Qué puedes hacer?</h3>
+              <ul className="space-y-2 text-white/70">
+                <li>• Personaliza tu perfil con foto, información y enlaces</li>
+                <li>• Sube y muestra tus proyectos</li>
+                <li>• Conecta tus perfiles de GitHub y LinkedIn</li>
+                <li>• Explora proyectos de otros usuarios</li>
+              </ul>
+              
+              <Button
+                onClick={() => navigate('/profile')}
+                className="mt-6 bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                <UserCircle className="w-4 h-4 mr-2" />
+                Ir a mi perfil
+              </Button>
+            </div>
           </div>
         </div>
 
