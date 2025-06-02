@@ -90,10 +90,16 @@ const GroupChat = () => {
 
       if (channelsError) throw channelsError;
       
-      setChannels(channelsData || []);
+      // Cast the type to ensure TypeScript compatibility
+      const typedChannels: Channel[] = (channelsData || []).map(channel => ({
+        ...channel,
+        type: channel.type as 'text' | 'voice'
+      }));
+      
+      setChannels(typedChannels);
       
       // Select first text channel by default
-      const firstTextChannel = channelsData?.find(c => c.type === 'text');
+      const firstTextChannel = typedChannels.find(c => c.type === 'text');
       if (firstTextChannel) {
         setSelectedChannel(firstTextChannel);
       }

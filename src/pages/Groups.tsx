@@ -35,31 +35,49 @@ const Groups = () => {
 
   const fetchGroups = async () => {
     try {
-      // Fetch all groups with member count and user membership info
-      const { data: groupsData, error } = await supabase
+      // First, get all groups
+      const { data: groupsData, error: groupsError } = await supabase
         .from('groups')
-        .select(`
-          *,
-          group_members!inner(count),
-          group_members!group_members_user_id_fkey(user_id, role)
-        `);
+        .select('*');
 
-      if (error) throw error;
+      if (groupsError) throw groupsError;
 
-      const processedGroups = groupsData?.map(group => {
-        const memberCount = group.group_members?.[0]?.count || 0;
-        const userMembership = group.group_members?.find(m => m.user_id === user?.id);
-        
-        return {
-          id: group.id,
-          name: group.name,
-          description: group.description || '',
-          background_image_url: group.background_image_url || '',
-          member_count: memberCount,
-          is_member: !!userMembership,
-          is_owner: group.owner_id === user?.id
-        };
-      }) || [];
+      // For each group, get member count and check user membership
+      const processedGroups = await Promise.all(
+        (groupsData || []).map(async (group) => {
+          // Get member count
+          const { count: memberCount, error: countError } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', group.id);
+
+          if (countError) {
+            console.error('Error counting members:', countError);
+          }
+
+          // Check if current user is a member
+          const { data: membershipData, error: membershipError } = await supabase
+            .from('group_members')
+            .select('role')
+            .eq('group_id', group.id)
+            .eq('user_id', user?.id)
+            .single();
+
+          if (membershipError && membershipError.code !== 'PGRST116') {
+            console.error('Error checking membership:', membershipError);
+          }
+
+          return {
+            id: group.id,
+            name: group.name,
+            description: group.description || '',
+            background_image_url: group.background_image_url || '',
+            member_count: memberCount || 0,
+            is_member: !!membershipData,
+            is_owner: group.owner_id === user?.id
+          };
+        })
+      );
 
       setGroups(processedGroups);
     } catch (error) {
