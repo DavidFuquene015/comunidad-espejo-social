@@ -64,77 +64,51 @@ const SuggestedFriends = () => {
 
   const fetchFriendRequests = async () => {
     try {
-      const { data, error } = await supabase
+      // First, get the friend requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('friend_requests')
-        .select(`
-          id,
-          sender_id,
-          receiver_id,
-          status,
-          created_at,
-          profiles!inner(
-            full_name,
-            avatar_url,
-            bio
-          )
-        `)
+        .select('*')
         .eq('receiver_id', user?.id)
         .eq('status', 'pending')
-        .eq('profiles.id', supabase.from('friend_requests').select('sender_id'))
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (requestsError) throw requestsError;
 
-      // Transform the data to match our interface
-      const transformedData = data?.map(request => ({
-        ...request,
-        sender_profile: {
-          full_name: request.profiles?.full_name || '',
-          avatar_url: request.profiles?.avatar_url || '',
-          bio: request.profiles?.bio || ''
-        }
-      })) || [];
+      if (!requestsData || requestsData.length === 0) {
+        setFriendRequests([]);
+        return;
+      }
 
-      setFriendRequests(transformedData);
+      // Then, get the profiles for the senders
+      const senderIds = requestsData.map(req => req.sender_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, bio')
+        .in('id', senderIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const combinedData = requestsData.map(request => {
+        const profile = profilesData?.find(p => p.id === request.sender_id);
+        return {
+          ...request,
+          sender_profile: {
+            full_name: profile?.full_name || '',
+            avatar_url: profile?.avatar_url || '',
+            bio: profile?.bio || ''
+          }
+        };
+      });
+
+      setFriendRequests(combinedData);
     } catch (error) {
       console.error('Error fetching friend requests:', error);
-      // Try alternative query approach
-      try {
-        const { data: requestsData, error: requestsError } = await supabase
-          .from('friend_requests')
-          .select('*')
-          .eq('receiver_id', user?.id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
-
-        if (requestsError) throw requestsError;
-
-        // Fetch profiles separately
-        const senderIds = requestsData?.map(req => req.sender_id) || [];
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, avatar_url, bio')
-          .in('id', senderIds);
-
-        if (profilesError) throw profilesError;
-
-        // Combine the data
-        const combinedData = requestsData?.map(request => {
-          const profile = profilesData?.find(p => p.id === request.sender_id);
-          return {
-            ...request,
-            sender_profile: {
-              full_name: profile?.full_name || '',
-              avatar_url: profile?.avatar_url || '',
-              bio: profile?.bio || ''
-            }
-          };
-        }) || [];
-
-        setFriendRequests(combinedData);
-      } catch (fallbackError) {
-        console.error('Fallback query also failed:', fallbackError);
-      }
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las solicitudes de amistad.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
