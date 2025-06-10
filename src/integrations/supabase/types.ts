@@ -57,6 +57,54 @@ export type Database = {
           },
         ]
       }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -273,7 +321,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_channel_group_id: {
+        Args: { channel_id: string }
+        Returns: string
+      }
+      get_suggested_users: {
+        Args: { user_id: string }
+        Returns: {
+          id: string
+          full_name: string
+          bio: string
+          avatar_url: string
+        }[]
+      }
+      is_group_admin: {
+        Args: { group_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { group_id: string; user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
