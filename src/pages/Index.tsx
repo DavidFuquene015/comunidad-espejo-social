@@ -1,22 +1,28 @@
+
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import InfinityLogo from '@/components/InfinityLogo';
 import LoginForm from '@/components/LoginForm';
-import Dashboard from './Dashboard';
+
 const Index = () => {
-  const {
-    user,
-    loading
-  } = useAuth();
+  const { user, loading } = useAuth();
+
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center">
         <div className="text-white text-xl">Cargando...</div>
-      </div>;
+      </div>
+    );
   }
+
   if (user) {
-    return <Dashboard />;
+    // Redirect to dashboard if user is logged in
+    window.location.href = '/dashboard';
+    return null;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center p-4 relative overflow-hidden">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Geometric background elements */}
       <div className="absolute inset-0 overflow-hidden bg-purple-950">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 border border-white/10 rounded-full animate-pulse"></div>
@@ -44,6 +50,8 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

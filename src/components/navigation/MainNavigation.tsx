@@ -70,7 +70,10 @@ const MainNavigation = () => {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
-              <Avatar className="w-8 h-8 border-2 border-white/20">
+              <Avatar 
+                className="w-8 h-8 border-2 border-white/20 cursor-pointer"
+                onClick={() => navigate('/profile')}
+              >
                 <AvatarImage 
                   src={user?.user_metadata?.avatar_url} 
                   alt={user?.user_metadata?.full_name || 'Usuario'} 
