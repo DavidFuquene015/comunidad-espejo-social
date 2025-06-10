@@ -9,6 +9,7 @@ import MainNavigation from '@/components/navigation/MainNavigation';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileProjects from '@/components/profile/ProfileProjects';
+import ProfileFriends from '@/components/profile/ProfileFriends';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import AddProjectModal from '@/components/profile/AddProjectModal';
 
@@ -90,23 +91,26 @@ const Profile = () => {
     <div className="min-h-screen bg-social-gradient">
       <MainNavigation />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Profile Header */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 mb-8">
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
           <div className="flex justify-between items-start mb-6">
             <ProfileHeader profile={profile} user={user} />
             <Button
               onClick={() => setIsEditModalOpen(true)}
               variant="outline"
-              className="text-white border-white/20 hover:bg-white/10 bg-transparent"
+              className="bg-transparent border-white/20 text-gray-900 hover:bg-white/10 hover:text-gray-900"
             >
               <Edit className="w-4 h-4 mr-2" />
-              <span className="text-white">Editar Perfil</span>
+              Editar Perfil
             </Button>
           </div>
 
           <ProfileInfo profile={profile} />
         </div>
+
+        {/* Friends Section */}
+        <ProfileFriends />
 
         {/* Projects Section */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
@@ -117,7 +121,7 @@ const Profile = () => {
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              <span className="text-white">Agregar Proyecto</span>
+              Agregar Proyecto
             </Button>
           </div>
 
