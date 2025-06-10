@@ -15,7 +15,7 @@ const InfinityLogo = () => {
       </div>
       <div className="text-center">
         <h1 className="text-4xl font-bold text-white mb-2 tracking-wider">
-          LOGIN
+          FLORTE
         </h1>
         <p className="text-white/70 text-lg leading-relaxed max-w-md">
           Conecta con el mundo infinito de posibilidades. Únete a nuestra comunidad y descubre experiencias únicas.

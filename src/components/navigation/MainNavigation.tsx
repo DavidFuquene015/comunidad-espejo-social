@@ -14,7 +14,6 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
-import InfinityLogo from '@/components/InfinityLogo';
 
 const MainNavigation = () => {
   const { user, signOut } = useAuth();
@@ -43,7 +42,13 @@ const MainNavigation = () => {
             className="flex items-center space-x-2 cursor-pointer" 
             onClick={() => navigate('/dashboard')}
           >
-            <InfinityLogo />
+            <div className="w-8 h-8">
+              <img
+                src="/lovable-uploads/744db0f4-e151-46c4-b80b-90e4a4b16b60.png"
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
             <span className="text-2xl font-bold text-white">FLORTE</span>
           </div>
 
@@ -58,8 +63,8 @@ const MainNavigation = () => {
                   key={item.path}
                   variant="ghost"
                   onClick={() => navigate(item.path)}
-                  className={`text-white hover:bg-white/10 ${
-                    isActive ? 'bg-white/20' : ''
+                  className={`text-white hover:bg-white/10 hover:text-white ${
+                    isActive ? 'bg-white/20 text-white' : 'text-white/80'
                   }`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -86,7 +91,7 @@ const MainNavigation = () => {
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="text-white hover:bg-white/10"
+                className="text-white hover:bg-white/10 hover:text-white"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Salir
@@ -99,7 +104,7 @@ const MainNavigation = () => {
             <Button
               variant="ghost"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 hover:text-white"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -122,8 +127,8 @@ const MainNavigation = () => {
                       navigate(item.path);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`text-white hover:bg-white/10 justify-start ${
-                      isActive ? 'bg-white/20' : ''
+                    className={`text-white hover:bg-white/10 hover:text-white justify-start ${
+                      isActive ? 'bg-white/20 text-white' : 'text-white/80'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -135,7 +140,7 @@ const MainNavigation = () => {
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="text-white hover:bg-white/10 justify-start"
+                className="text-white hover:bg-white/10 hover:text-white justify-start"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Salir

@@ -158,17 +158,17 @@ const LoginForm = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 bg-button-gradient hover:scale-105 transform transition-all duration-200 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105 transform transition-all duration-200 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="flex items-center space-x-2">
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              <span>{isSignUp ? 'CREANDO...' : 'INICIANDO...'}</span>
+              <span className="text-white">{isSignUp ? 'CREANDO...' : 'INICIANDO...'}</span>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              {isSignUp ? <UserPlus className="h-5 w-5" /> : <User className="h-5 w-5" />}
-              <span>{isSignUp ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span>
+              {isSignUp ? <UserPlus className="h-5 w-5 text-white" /> : <User className="h-5 w-5 text-white" />}
+              <span className="text-white">{isSignUp ? 'CREAR CUENTA' : 'INICIAR SESIÓN'}</span>
             </div>
           )}
         </Button>
@@ -178,7 +178,7 @@ const LoginForm = () => {
             {isSignUp ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
             <button
               type="button"
-              className="text-purple-300 hover:text-purple-200 font-medium transition-colors duration-200"
+              className="text-purple-300 hover:text-purple-200 font-medium transition-colors duration-200 underline"
               onClick={toggleMode}
             >
               {isSignUp ? 'Inicia sesión' : 'Regístrate'}
