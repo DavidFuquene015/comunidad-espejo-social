@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,7 +14,7 @@ export interface Post {
   profiles: {
     full_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
   reactions: PostReaction[];
   comments: PostComment[];
   _count?: {
@@ -36,7 +37,7 @@ export interface PostComment {
   profiles: {
     full_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 export const usePosts = () => {
@@ -47,52 +48,65 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
-        .select(`
-          *,
-          profiles!posts_user_id_fkey (
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (postsError) throw postsError;
 
-      const postsWithReactionsAndComments = await Promise.all(
-        (data || []).map(async (post) => {
-          const [reactions, comments] = await Promise.all([
-            supabase
-              .from('post_reactions')
-              .select('*')
-              .eq('post_id', post.id),
-            supabase
-              .from('post_comments')
-              .select(`
-                *,
-                profiles!post_comments_user_id_fkey (
-                  full_name,
-                  avatar_url
-                )
-              `)
-              .eq('post_id', post.id)
-              .order('created_at', { ascending: true })
-          ]);
+      const postsWithDetails = await Promise.all(
+        (postsData || []).map(async (post) => {
+          // Fetch profile for the post author
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', post.user_id)
+            .single();
+
+          // Fetch reactions
+          const { data: reactionsData } = await supabase
+            .from('post_reactions')
+            .select('*')
+            .eq('post_id', post.id);
+
+          // Fetch comments with profiles
+          const { data: commentsData } = await supabase
+            .from('post_comments')
+            .select('*')
+            .eq('post_id', post.id)
+            .order('created_at', { ascending: true });
+
+          // Fetch profiles for comment authors
+          const commentsWithProfiles = await Promise.all(
+            (commentsData || []).map(async (comment) => {
+              const { data: commentProfile } = await supabase
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', comment.user_id)
+                .single();
+
+              return {
+                ...comment,
+                profiles: commentProfile || { full_name: null, avatar_url: null }
+              };
+            })
+          );
 
           return {
             ...post,
-            reactions: reactions.data || [],
-            comments: comments.data || [],
+            profiles: profileData || { full_name: null, avatar_url: null },
+            reactions: reactionsData || [],
+            comments: commentsWithProfiles,
             _count: {
-              reactions: reactions.data?.length || 0,
-              comments: comments.data?.length || 0,
+              reactions: reactionsData?.length || 0,
+              comments: commentsWithProfiles?.length || 0,
             },
           };
         })
       );
 
-      setPosts(postsWithReactionsAndComments);
+      setPosts(postsWithDetails);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
