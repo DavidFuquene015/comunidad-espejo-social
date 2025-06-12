@@ -51,7 +51,7 @@ export const usePosts = () => {
         .from('posts')
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             full_name,
             avatar_url
           )
@@ -71,7 +71,7 @@ export const usePosts = () => {
               .from('post_comments')
               .select(`
                 *,
-                profiles:user_id (
+                profiles (
                   full_name,
                   avatar_url
                 )
