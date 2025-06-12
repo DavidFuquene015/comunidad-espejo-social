@@ -210,14 +210,14 @@ const ChatArea = ({ channel }: ChatAreaProps) => {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center bg-social-gradient">
         <div className="text-white/70">Cargando mensajes...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-social-gradient">
       {/* Channel Header */}
       <div className="bg-white/5 backdrop-blur-sm border-b border-white/20 p-4">
         <h3 className="text-white font-semibold"># {channel.name}</h3>
@@ -226,14 +226,16 @@ const ChatArea = ({ channel }: ChatAreaProps) => {
         )}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <MessageList messages={messages} currentUserId={user?.id} />
-        <div ref={messagesEndRef} />
+      {/* Messages Container with proper background */}
+      <div className="flex-1 overflow-hidden bg-social-gradient">
+        <div className="h-full overflow-y-auto p-4 space-y-4 bg-social-gradient">
+          <MessageList messages={messages} currentUserId={user?.id} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-white/20 p-4">
+      <div className="border-t border-white/20 p-4 bg-social-gradient">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
           <input
             type="file"

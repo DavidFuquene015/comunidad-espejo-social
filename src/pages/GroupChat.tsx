@@ -8,6 +8,7 @@ import MainNavigation from '@/components/navigation/MainNavigation';
 import GroupSidebar from '@/components/groups/GroupSidebar';
 import ChatArea from '@/components/groups/ChatArea';
 import VoiceChannel from '@/components/groups/VoiceChannel';
+import GroupMembers from '@/components/groups/GroupMembers';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -159,29 +160,34 @@ const GroupChat = () => {
         />
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-social-gradient">
           {/* Header */}
-          <div className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-4 flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/groups')}
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold text-white">{group.name}</h1>
-              {selectedChannel && (
-                <p className="text-white/70 text-sm">
-                  # {selectedChannel.name} {selectedChannel.type === 'voice' && '🔊'}
-                </p>
-              )}
+          <div className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-4 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/groups')}
+                className="text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-white">{group.name}</h1>
+                {selectedChannel && (
+                  <p className="text-white/70 text-sm">
+                    # {selectedChannel.name} {selectedChannel.type === 'voice' && '🔊'}
+                  </p>
+                )}
+              </div>
             </div>
+            
+            {/* Members Button */}
+            <GroupMembers groupId={group.id} isUserAdmin={isUserAdmin} />
           </div>
 
           {/* Channel Content */}
-          <div className="flex-1">
+          <div className="flex-1 bg-social-gradient">
             {selectedChannel?.type === 'text' && (
               <ChatArea channel={selectedChannel} />
             )}
