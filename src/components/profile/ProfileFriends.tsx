@@ -78,13 +78,7 @@ const ProfileFriends = ({ userId }: ProfileFriendsProps) => {
   };
 
   const handleViewProfile = (friendId: string) => {
-    // Por ahora navegamos a la misma página de perfil
-    // En el futuro se puede crear una página específica para ver perfiles de otros usuarios
-    console.log('Ver perfil de:', friendId);
-    toast({
-      title: "Función en desarrollo",
-      description: "La visualización de perfiles de amigos estará disponible pronto.",
-    });
+    navigate(`/profile/${friendId}`);
   };
 
   if (loading) {
@@ -163,7 +157,7 @@ const ProfileFriends = ({ userId }: ProfileFriendsProps) => {
                 onClick={() => handleViewProfile(friend.id)}
                 variant="outline"
                 size="sm"
-                className="w-full bg-transparent border-white/20 text-gray-900 hover:bg-white/10 hover:text-gray-900"
+                className="w-full bg-transparent border-purple-400 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
               >
                 Ver Perfil
               </Button>
