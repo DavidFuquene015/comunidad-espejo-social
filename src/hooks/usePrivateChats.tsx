@@ -91,21 +91,21 @@ export const usePrivateChats = () => {
       if (!user) return null;
 
       // Primero intentar encontrar un chat existente
-      const { data: existingChat, error: searchError } = await supabase
+      const { data: existingChatData, error: searchError } = await supabase
         .from('private_chats' as any)
         .select('id')
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${friendId}),and(user1_id.eq.${friendId},user2_id.eq.${user.id})`)
-        .single();
+        .maybeSingle();
 
-      if (existingChat && !searchError) {
-        return existingChat.id;
+      if (existingChatData && !searchError) {
+        return (existingChatData as any).id;
       }
 
       // Si no existe, crear uno nuevo
       const user1_id = user.id < friendId ? user.id : friendId;
       const user2_id = user.id < friendId ? friendId : user.id;
 
-      const { data: newChat, error: createError } = await supabase
+      const { data: newChatData, error: createError } = await supabase
         .from('private_chats' as any)
         .insert({
           user1_id,
@@ -115,7 +115,7 @@ export const usePrivateChats = () => {
         .single();
 
       if (createError) throw createError;
-      return newChat.id;
+      return (newChatData as any).id;
     } catch (error) {
       console.error('Error creating chat:', error);
       toast({
