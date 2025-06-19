@@ -70,7 +70,7 @@ export const usePrivateChats = () => {
             .eq('id', otherUserId)
             .single();
 
-          // Obtener último mensaje
+          // Obtener último mensaje con información del remitente
           const { data: lastMessage } = await supabase
             .from('private_messages')
             .select('*')
@@ -79,10 +79,26 @@ export const usePrivateChats = () => {
             .limit(1)
             .maybeSingle();
 
+          let lastMessageWithSender: PrivateMessage | undefined;
+          
+          if (lastMessage) {
+            // Obtener perfil del remitente del último mensaje
+            const { data: senderProfile } = await supabase
+              .from('profiles')
+              .select('full_name, avatar_url')
+              .eq('id', lastMessage.sender_id)
+              .single();
+
+            lastMessageWithSender = {
+              ...lastMessage,
+              sender: senderProfile || { full_name: null, avatar_url: null }
+            };
+          }
+
           return {
             ...chat,
             other_user: otherUserProfile || null,
-            last_message: lastMessage || undefined
+            last_message: lastMessageWithSender
           };
         })
       );
