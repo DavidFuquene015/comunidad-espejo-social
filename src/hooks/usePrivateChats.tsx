@@ -107,8 +107,12 @@ export const usePrivateChats = () => {
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${friendId}),and(user1_id.eq.${friendId},user2_id.eq.${user.id})`)
         .maybeSingle();
 
-      if (existingChatData && !searchError) {
-        return existingChatData.id;
+      if (searchError) {
+        console.log('Error searching for existing chat:', searchError);
+      }
+
+      if (existingChatData && (existingChatData as any).id) {
+        return (existingChatData as any).id;
       }
 
       // Si no existe, crear uno nuevo
@@ -133,7 +137,7 @@ export const usePrivateChats = () => {
         return null;
       }
       
-      return newChatData.id;
+      return newChatData && (newChatData as any).id ? (newChatData as any).id : null;
     } catch (error) {
       console.error('Error creating chat:', error);
       toast({
