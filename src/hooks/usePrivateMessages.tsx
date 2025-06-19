@@ -15,8 +15,9 @@ export const usePrivateMessages = (chatId: string) => {
     if (!chatId) return;
 
     try {
+      // Usar from() con casting de tipo para evitar errores de TypeScript
       const { data: messagesData, error } = await supabase
-        .from('private_messages')
+        .from('private_messages' as any)
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
@@ -24,7 +25,7 @@ export const usePrivateMessages = (chatId: string) => {
       if (error) throw error;
 
       const messagesWithProfiles = await Promise.all(
-        (messagesData || []).map(async (message) => {
+        (messagesData || []).map(async (message: any) => {
           const { data: senderProfile } = await supabase
             .from('profiles')
             .select('full_name, avatar_url')
@@ -76,7 +77,7 @@ export const usePrivateMessages = (chatId: string) => {
       }
 
       const { error } = await supabase
-        .from('private_messages')
+        .from('private_messages' as any)
         .insert({
           chat_id: chatId,
           sender_id: user.id,
@@ -115,7 +116,7 @@ export const usePrivateMessages = (chatId: string) => {
             table: 'private_messages',
             filter: `chat_id=eq.${chatId}`
           },
-          async (payload) => {
+          async (payload: any) => {
             const { data: senderProfile } = await supabase
               .from('profiles')
               .select('full_name, avatar_url')
@@ -123,7 +124,7 @@ export const usePrivateMessages = (chatId: string) => {
               .single();
 
             const newMessage: PrivateMessage = {
-              ...payload.new as any,
+              ...payload.new,
               sender: senderProfile || { full_name: null, avatar_url: null }
             };
 
