@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePrivateChats } from '@/hooks/usePrivateChats';
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface StartChatButtonProps {
   friendId: string;
@@ -13,11 +14,27 @@ interface StartChatButtonProps {
 const StartChatButton = ({ friendId, friendName }: StartChatButtonProps) => {
   const navigate = useNavigate();
   const { getOrCreateChat } = usePrivateChats();
+  const { toast } = useToast();
 
   const handleStartChat = async () => {
-    const chatId = await getOrCreateChat(friendId);
-    if (chatId) {
-      navigate(`/chat/${chatId}`);
+    try {
+      const chatId = await getOrCreateChat(friendId);
+      if (chatId) {
+        navigate(`/chat/${chatId}`);
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo crear el chat con este usuario.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al intentar iniciar el chat.",
+        variant: "destructive",
+      });
     }
   };
 

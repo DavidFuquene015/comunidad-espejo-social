@@ -44,13 +44,13 @@ export const usePrivateChats = () => {
     try {
       // Obtener chats privados del usuario
       const { data: chatData, error } = await supabase
-        .from('private_chats' as any)
+        .from('private_chats')
         .select('*')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.log('Error fetching chats, might need to create tables:', error);
+        console.error('Error fetching chats:', error);
         setChats([]);
         return;
       }
@@ -61,7 +61,7 @@ export const usePrivateChats = () => {
       }
 
       const chatsWithUsers = await Promise.all(
-        chatData.map(async (chat: any) => {
+        chatData.map(async (chat) => {
           const otherUserId = chat.user1_id === user.id ? chat.user2_id : chat.user1_id;
           
           const { data: otherUserProfile } = await supabase
@@ -72,7 +72,7 @@ export const usePrivateChats = () => {
 
           // Obtener último mensaje
           const { data: lastMessage } = await supabase
-            .from('private_messages' as any)
+            .from('private_messages')
             .select('*')
             .eq('chat_id', chat.id)
             .order('created_at', { ascending: false })
@@ -102,7 +102,7 @@ export const usePrivateChats = () => {
 
       // Primero intentar encontrar un chat existente
       const { data: existingChatData, error: searchError } = await supabase
-        .from('private_chats' as any)
+        .from('private_chats')
         .select('id')
         .or(`and(user1_id.eq.${user.id},user2_id.eq.${friendId}),and(user1_id.eq.${friendId},user2_id.eq.${user.id})`)
         .maybeSingle();
@@ -111,8 +111,8 @@ export const usePrivateChats = () => {
         console.log('Error searching for existing chat:', searchError);
       }
 
-      if (existingChatData && (existingChatData as any).id) {
-        return (existingChatData as any).id;
+      if (existingChatData?.id) {
+        return existingChatData.id;
       }
 
       // Si no existe, crear uno nuevo
@@ -120,7 +120,7 @@ export const usePrivateChats = () => {
       const user2_id = user.id < friendId ? friendId : user.id;
 
       const { data: newChatData, error: createError } = await supabase
-        .from('private_chats' as any)
+        .from('private_chats')
         .insert({
           user1_id,
           user2_id
@@ -129,15 +129,16 @@ export const usePrivateChats = () => {
         .single();
 
       if (createError) {
-        console.log('Error creating chat, might need to create tables:', createError);
+        console.error('Error creating chat:', createError);
         toast({
-          title: "Info",
-          description: "Las tablas de chat privado necesitan ser creadas en la base de datos.",
+          title: "Error",
+          description: "No se pudo crear el chat.",
+          variant: "destructive",
         });
         return null;
       }
       
-      return newChatData && (newChatData as any).id ? (newChatData as any).id : null;
+      return newChatData?.id || null;
     } catch (error) {
       console.error('Error creating chat:', error);
       toast({

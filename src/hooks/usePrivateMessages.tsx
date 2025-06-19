@@ -16,13 +16,13 @@ export const usePrivateMessages = (chatId: string) => {
 
     try {
       const { data: messagesData, error } = await supabase
-        .from('private_messages' as any)
+        .from('private_messages')
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.log('Error fetching messages, might need to create tables:', error);
+        console.error('Error fetching messages:', error);
         setMessages([]);
         return;
       }
@@ -33,7 +33,7 @@ export const usePrivateMessages = (chatId: string) => {
       }
 
       const messagesWithProfiles = await Promise.all(
-        messagesData.map(async (message: any) => {
+        messagesData.map(async (message) => {
           const { data: senderProfile } = await supabase
             .from('profiles')
             .select('full_name, avatar_url')
@@ -88,7 +88,7 @@ export const usePrivateMessages = (chatId: string) => {
       }
 
       const { error } = await supabase
-        .from('private_messages' as any)
+        .from('private_messages')
         .insert({
           chat_id: chatId,
           sender_id: user.id,
@@ -98,10 +98,10 @@ export const usePrivateMessages = (chatId: string) => {
         });
 
       if (error) {
-        console.log('Error sending message:', error);
+        console.error('Error sending message:', error);
         toast({
           title: "Error",
-          description: "No se pudo enviar el mensaje. Las tablas necesitan ser creadas.",
+          description: "No se pudo enviar el mensaje.",
           variant: "destructive",
         });
         return;
