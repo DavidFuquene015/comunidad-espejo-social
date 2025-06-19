@@ -15,17 +15,25 @@ export const usePrivateMessages = (chatId: string) => {
     if (!chatId) return;
 
     try {
-      // Usar from() con casting de tipo para evitar errores de TypeScript
       const { data: messagesData, error } = await supabase
         .from('private_messages' as any)
         .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error fetching messages, might need to create tables:', error);
+        setMessages([]);
+        return;
+      }
+
+      if (!messagesData) {
+        setMessages([]);
+        return;
+      }
 
       const messagesWithProfiles = await Promise.all(
-        (messagesData || []).map(async (message: any) => {
+        messagesData.map(async (message: any) => {
           const { data: senderProfile } = await supabase
             .from('profiles')
             .select('full_name, avatar_url')
@@ -42,6 +50,7 @@ export const usePrivateMessages = (chatId: string) => {
       setMessages(messagesWithProfiles);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -62,18 +71,20 @@ export const usePrivateMessages = (chatId: string) => {
           .from('private-chat-media')
           .upload(fileName, mediaFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.log('Storage upload error:', uploadError);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('private-chat-media')
+            .getPublicUrl(fileName);
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('private-chat-media')
-          .getPublicUrl(fileName);
-
-        mediaUrl = publicUrl;
-        
-        if (mediaFile.type.startsWith('image/')) mediaType = 'image';
-        else if (mediaFile.type.startsWith('video/')) mediaType = 'video';
-        else if (mediaFile.type.startsWith('audio/')) mediaType = 'audio';
-        else mediaType = 'file';
+          mediaUrl = publicUrl;
+          
+          if (mediaFile.type.startsWith('image/')) mediaType = 'image';
+          else if (mediaFile.type.startsWith('video/')) mediaType = 'video';
+          else if (mediaFile.type.startsWith('audio/')) mediaType = 'audio';
+          else mediaType = 'file';
+        }
       }
 
       const { error } = await supabase
@@ -86,7 +97,15 @@ export const usePrivateMessages = (chatId: string) => {
           media_type: mediaType,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error sending message:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo enviar el mensaje. Las tablas necesitan ser creadas.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "¡Mensaje enviado!",

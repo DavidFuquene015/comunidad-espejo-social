@@ -42,17 +42,26 @@ export const usePrivateChats = () => {
     if (!user) return;
 
     try {
-      // Usar from() directamente con casting de tipo
+      // Obtener chats privados del usuario
       const { data: chatData, error } = await supabase
         .from('private_chats' as any)
         .select('*')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error fetching chats, might need to create tables:', error);
+        setChats([]);
+        return;
+      }
+
+      if (!chatData || chatData.length === 0) {
+        setChats([]);
+        return;
+      }
 
       const chatsWithUsers = await Promise.all(
-        (chatData || []).map(async (chat: any) => {
+        chatData.map(async (chat: any) => {
           const otherUserId = chat.user1_id === user.id ? chat.user2_id : chat.user1_id;
           
           const { data: otherUserProfile } = await supabase
@@ -68,7 +77,7 @@ export const usePrivateChats = () => {
             .eq('chat_id', chat.id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           return {
             ...chat,
@@ -81,6 +90,7 @@ export const usePrivateChats = () => {
       setChats(chatsWithUsers);
     } catch (error) {
       console.error('Error fetching chats:', error);
+      setChats([]);
     } finally {
       setLoading(false);
     }
@@ -98,7 +108,7 @@ export const usePrivateChats = () => {
         .maybeSingle();
 
       if (existingChatData && !searchError) {
-        return (existingChatData as any).id;
+        return existingChatData.id;
       }
 
       // Si no existe, crear uno nuevo
@@ -114,8 +124,16 @@ export const usePrivateChats = () => {
         .select('id')
         .single();
 
-      if (createError) throw createError;
-      return (newChatData as any).id;
+      if (createError) {
+        console.log('Error creating chat, might need to create tables:', createError);
+        toast({
+          title: "Info",
+          description: "Las tablas de chat privado necesitan ser creadas en la base de datos.",
+        });
+        return null;
+      }
+      
+      return newChatData.id;
     } catch (error) {
       console.error('Error creating chat:', error);
       toast({

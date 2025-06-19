@@ -9,6 +9,7 @@ import {
   User, 
   Users, 
   UserPlus,
+  MessageCircle,
   LogOut,
   Menu,
   X
@@ -31,6 +32,7 @@ const MainNavigation = () => {
     { path: '/profile', icon: User, label: 'Perfil' },
     { path: '/groups', icon: Users, label: 'Grupos' },
     { path: '/friends', icon: UserPlus, label: 'Amigos' },
+    { path: '/chats', icon: MessageCircle, label: 'Chats Privados' },
   ];
 
   return (
