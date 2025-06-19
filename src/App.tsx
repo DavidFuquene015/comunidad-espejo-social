@@ -12,6 +12,8 @@ import UserProfile from "./pages/UserProfile";
 import Groups from "./pages/Groups";
 import GroupChat from "./pages/GroupChat";
 import SuggestedFriends from "./pages/SuggestedFriends";
+import PrivateChats from "./pages/PrivateChats";
+import PrivateChat from "./pages/PrivateChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:groupId" element={<GroupChat />} />
             <Route path="/friends" element={<SuggestedFriends />} />
+            <Route path="/chats" element={<PrivateChats />} />
+            <Route path="/chat/:chatId" element={<PrivateChat />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

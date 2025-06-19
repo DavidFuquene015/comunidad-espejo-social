@@ -3,32 +3,31 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import MainNavigation from '@/components/navigation/MainNavigation';
-import Feed from '@/components/feed/Feed';
+import PrivateChatWindow from '@/components/chat/PrivateChatWindow';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
 
-const Dashboard = () => {
+const PrivateChat = () => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-social-gradient flex items-center justify-center">
+        <div className="text-white">Debes iniciar sesión para acceder al chat</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-social-gradient transition-all duration-300">
+    <div className="min-h-screen bg-social-gradient">
       <MainNavigation />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header de bienvenida */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              ¡Bienvenido a FLORTE!
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Conecta, comparte y haz crecer tu red profesional
-            </p>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 h-[600px] flex flex-col">
+            <PrivateChatWindow />
           </div>
-
-          {/* Feed principal */}
-          <Feed />
         </div>
       </div>
 
@@ -51,4 +50,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default PrivateChat;

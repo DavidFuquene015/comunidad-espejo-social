@@ -3,32 +3,38 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import MainNavigation from '@/components/navigation/MainNavigation';
-import Feed from '@/components/feed/Feed';
+import PrivateChatList from '@/components/chat/PrivateChatList';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
 
-const Dashboard = () => {
+const PrivateChats = () => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-social-gradient flex items-center justify-center">
+        <div className="text-white">Debes iniciar sesión para ver tus chats</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-social-gradient transition-all duration-300">
+    <div className="min-h-screen bg-social-gradient">
       <MainNavigation />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header de bienvenida */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              ¡Bienvenido a FLORTE!
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Conecta, comparte y haz crecer tu red profesional
-            </p>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/50 h-[600px]">
+            <div className="p-6 border-b border-border">
+              <h1 className="text-2xl font-bold text-foreground">Chats Privados</h1>
+              <p className="text-muted-foreground mt-2">
+                Conversa con tus amigos de forma privada
+              </p>
+            </div>
+            
+            <PrivateChatList />
           </div>
-
-          {/* Feed principal */}
-          <Feed />
         </div>
       </div>
 
@@ -51,4 +57,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default PrivateChats;
