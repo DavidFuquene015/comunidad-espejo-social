@@ -48,11 +48,6 @@ export const usePrivateMessages = (chatId: string) => {
       );
 
       setMessages(messagesWithProfiles);
-
-      // Marcar mensajes como leídos automáticamente cuando se cargan
-      if (user) {
-        await markMessagesAsRead();
-      }
     } catch (error) {
       console.error('Error fetching messages:', error);
       setMessages([]);
@@ -65,6 +60,7 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user || !chatId) return;
 
     try {
+      // Solo marcar mensajes que no son míos y que no han sido leídos
       const { error } = await supabase
         .from('private_messages')
         .update({ read_at: new Date().toISOString() })
@@ -74,7 +70,17 @@ export const usePrivateMessages = (chatId: string) => {
 
       if (error) {
         console.error('Error marking messages as read:', error);
+        return;
       }
+
+      // Actualizar el estado local inmediatamente
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.sender_id !== user.id && !msg.read_at
+            ? { ...msg, read_at: new Date().toISOString() }
+            : msg
+        )
+      );
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
@@ -145,8 +151,9 @@ export const usePrivateMessages = (chatId: string) => {
     }
   };
 
+  // Efecto principal para suscribirse a cambios en tiempo real
   useEffect(() => {
-    if (chatId) {
+    if (chatId && user) {
       fetchMessages();
 
       const channel = supabase
@@ -172,11 +179,6 @@ export const usePrivateMessages = (chatId: string) => {
             };
 
             setMessages(prev => [...prev, newMessage]);
-            
-            // Marcar como leído si no es nuestro mensaje
-            if (user && payload.new.sender_id !== user.id) {
-              await markMessagesAsRead();
-            }
           }
         )
         .on(
@@ -205,26 +207,17 @@ export const usePrivateMessages = (chatId: string) => {
     }
   }, [chatId, user]);
 
-  // Marcar mensajes como leídos cuando el usuario está activo en el chat
+  // Efecto separado para marcar mensajes como leídos cuando se carga el chat
   useEffect(() => {
-    if (chatId && user) {
-      const handleVisibilityChange = () => {
-        if (!document.hidden) {
-          markMessagesAsRead();
-        }
-      };
+    if (chatId && user && messages.length > 0) {
+      // Marcar como leído después de un pequeño delay para asegurar que los mensajes se han cargado
+      const timer = setTimeout(() => {
+        markMessagesAsRead();
+      }, 500);
 
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      
-      // También marcar cuando el chat se enfoca
-      window.addEventListener('focus', markMessagesAsRead);
-
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('focus', markMessagesAsRead);
-      };
+      return () => clearTimeout(timer);
     }
-  }, [chatId, user]);
+  }, [chatId, user, messages.length]);
 
   return {
     messages,

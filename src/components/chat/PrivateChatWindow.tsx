@@ -27,11 +27,14 @@ const PrivateChatWindow = () => {
 
   // Marcar el chat como leído cuando se abre
   useEffect(() => {
-    if (chatId) {
-      markChatAsRead(chatId);
-      markMessagesAsRead();
+    if (chatId && user) {
+      const markAsRead = async () => {
+        await markChatAsRead(chatId);
+        await markMessagesAsRead();
+      };
+      markAsRead();
     }
-  }, [chatId, markChatAsRead, markMessagesAsRead]);
+  }, [chatId, user, markChatAsRead, markMessagesAsRead]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -140,7 +140,7 @@ export const usePrivateChats = () => {
         return;
       }
 
-      // Actualizar el estado local
+      // Actualizar el estado local inmediatamente
       setChats(prevChats => 
         prevChats.map(chat => 
           chat.id === chatId 
