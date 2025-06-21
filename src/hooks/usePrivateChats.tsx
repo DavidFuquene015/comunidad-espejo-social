@@ -75,7 +75,7 @@ export const usePrivateChats = () => {
           // Obtener último mensaje con información del remitente
           const { data: lastMessage } = await supabase
             .from('private_messages')
-            .select('*')
+            .select('*, read_at')
             .eq('chat_id', chat.id)
             .order('created_at', { ascending: false })
             .limit(1)

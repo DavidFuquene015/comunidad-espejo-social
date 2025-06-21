@@ -17,7 +17,7 @@ export const usePrivateMessages = (chatId: string) => {
     try {
       const { data: messagesData, error } = await supabase
         .from('private_messages')
-        .select('*')
+        .select('*, read_at')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
