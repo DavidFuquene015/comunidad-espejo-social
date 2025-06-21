@@ -2,18 +2,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePrivateMessages } from '@/hooks/usePrivateMessages';
+import { usePrivateChats } from '@/hooks/usePrivateChats';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Send, Paperclip, Image, Video } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip } from 'lucide-react';
 import PrivateMessageBubble from './PrivateMessageBubble';
 
 const PrivateChatWindow = () => {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { messages, loading, sendMessage } = usePrivateMessages(chatId || '');
+  const { messages, loading, sendMessage, markMessagesAsRead } = usePrivateMessages(chatId || '');
+  const { markChatAsRead } = usePrivateChats();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,6 +24,14 @@ const PrivateChatWindow = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Marcar el chat como leído cuando se abre
+  useEffect(() => {
+    if (chatId) {
+      markChatAsRead(chatId);
+      markMessagesAsRead();
+    }
+  }, [chatId, markChatAsRead, markMessagesAsRead]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

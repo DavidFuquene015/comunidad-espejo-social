@@ -2,8 +2,9 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { User, Download } from 'lucide-react';
+import { User, Download, Check, CheckCheck } from 'lucide-react';
 import { PrivateMessage } from '@/hooks/usePrivateChats';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PrivateMessageBubbleProps {
   message: PrivateMessage;
@@ -11,12 +12,24 @@ interface PrivateMessageBubbleProps {
 }
 
 const PrivateMessageBubble = ({ message, isOwn }: PrivateMessageBubbleProps) => {
+  const { user } = useAuth();
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
+  };
+
+  const renderReadStatus = () => {
+    if (!isOwn) return null;
+
+    if (message.read_at) {
+      return <CheckCheck className="w-4 h-4 text-blue-500" />;
+    } else {
+      return <Check className="w-4 h-4 text-gray-400" />;
+    }
   };
 
   const renderMedia = () => {
@@ -111,10 +124,11 @@ const PrivateMessageBubble = ({ message, isOwn }: PrivateMessageBubbleProps) => 
         </div>
 
         {isOwn && (
-          <div className="text-right mt-1">
+          <div className="flex items-center justify-end space-x-1 mt-1">
             <span className="text-xs text-muted-foreground">
               {formatTime(message.created_at)}
             </span>
+            {renderReadStatus()}
           </div>
         )}
       </div>

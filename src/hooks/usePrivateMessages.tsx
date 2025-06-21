@@ -65,12 +65,16 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user || !chatId) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('private_messages')
         .update({ read_at: new Date().toISOString() })
         .eq('chat_id', chatId)
         .neq('sender_id', user.id)
         .is('read_at', null);
+
+      if (error) {
+        console.error('Error marking messages as read:', error);
+      }
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
@@ -175,10 +179,49 @@ export const usePrivateMessages = (chatId: string) => {
             }
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'private_messages',
+            filter: `chat_id=eq.${chatId}`
+          },
+          (payload: any) => {
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.id === payload.new.id 
+                  ? { ...msg, read_at: payload.new.read_at }
+                  : msg
+              )
+            );
+          }
+        )
         .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
+      };
+    }
+  }, [chatId, user]);
+
+  // Marcar mensajes como leídos cuando el usuario está activo en el chat
+  useEffect(() => {
+    if (chatId && user) {
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          markMessagesAsRead();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      // También marcar cuando el chat se enfoca
+      window.addEventListener('focus', markMessagesAsRead);
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', markMessagesAsRead);
       };
     }
   }, [chatId, user]);
