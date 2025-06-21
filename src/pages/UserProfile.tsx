@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +10,7 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileProjects from '@/components/profile/ProfileProjects';
 import ProfileFriends from '@/components/profile/ProfileFriends';
+import StartChatButton from '@/components/profile/StartChatButton';
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -234,7 +234,15 @@ const UserProfile = () => {
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
           <div className="flex justify-between items-start mb-6">
             <ProfileHeader profile={profile} user={{ email: profile.id }} />
-            {renderFriendButton()}
+            <div className="flex space-x-3">
+              {renderFriendButton()}
+              {isFriend && user && userId && (
+                <StartChatButton 
+                  friendId={userId} 
+                  friendName={profile?.full_name || 'Usuario'} 
+                />
+              )}
+            </div>
           </div>
 
           <ProfileInfo profile={profile} />
