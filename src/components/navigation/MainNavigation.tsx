@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePrivateChats } from '@/hooks/usePrivateChats';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { 
   Home, 
   User, 
@@ -18,6 +20,7 @@ import { useState } from 'react';
 
 const MainNavigation = () => {
   const { user, signOut } = useAuth();
+  const { chats } = usePrivateChats();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,12 +30,22 @@ const MainNavigation = () => {
     navigate('/');
   };
 
+  // Calcular total de mensajes no leídos
+  const totalUnreadMessages = chats.reduce((total, chat) => {
+    return total + (chat.unread_count || 0);
+  }, 0);
+
   const navigationItems = [
     { path: '/dashboard', icon: Home, label: 'Inicio' },
     { path: '/profile', icon: User, label: 'Perfil' },
     { path: '/groups', icon: Users, label: 'Grupos' },
     { path: '/friends', icon: UserPlus, label: 'Amigos' },
-    { path: '/chats', icon: MessageCircle, label: 'Chats Privados' },
+    { 
+      path: '/chats', 
+      icon: MessageCircle, 
+      label: 'Chats Privados',
+      badge: totalUnreadMessages > 0 ? totalUnreadMessages : null
+    },
   ];
 
   return (
@@ -61,17 +74,26 @@ const MainNavigation = () => {
               const isActive = location.pathname === item.path;
               
               return (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  onClick={() => navigate(item.path)}
-                  className={`text-white hover:bg-white/10 hover:text-white ${
-                    isActive ? 'bg-white/20 text-white' : 'text-white/80'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {item.label}
-                </Button>
+                <div key={item.path} className="relative">
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate(item.path)}
+                    className={`text-white hover:bg-white/10 hover:text-white ${
+                      isActive ? 'bg-white/20 text-white' : 'text-white/80'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </Button>
+                  {item.badge && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
+                    >
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </Badge>
+                  )}
+                </div>
               );
             })}
 
@@ -122,20 +144,29 @@ const MainNavigation = () => {
                 const isActive = location.pathname === item.path;
                 
                 return (
-                  <Button
-                    key={item.path}
-                    variant="ghost"
-                    onClick={() => {
-                      navigate(item.path);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`text-white hover:bg-white/10 hover:text-white justify-start ${
-                      isActive ? 'bg-white/20 text-white' : 'text-white/80'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </Button>
+                  <div key={item.path} className="relative">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`text-white hover:bg-white/10 hover:text-white justify-start w-full ${
+                        isActive ? 'bg-white/20 text-white' : 'text-white/80'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {item.label}
+                    </Button>
+                    {item.badge && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute top-2 right-4 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </Badge>
+                    )}
+                  </div>
                 );
               })}
               

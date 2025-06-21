@@ -16,6 +16,7 @@ export interface PrivateChat {
     avatar_url: string | null;
   } | null;
   last_message?: PrivateMessage;
+  unread_count?: number;
 }
 
 export interface PrivateMessage {
@@ -26,6 +27,7 @@ export interface PrivateMessage {
   media_url: string | null;
   media_type: string | null;
   created_at: string;
+  read_at: string | null;
   sender: {
     full_name: string | null;
     avatar_url: string | null;
@@ -95,10 +97,19 @@ export const usePrivateChats = () => {
             };
           }
 
+          // Contar mensajes no leídos (mensajes donde read_at es null y el sender no es el usuario actual)
+          const { count: unreadCount } = await supabase
+            .from('private_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('chat_id', chat.id)
+            .neq('sender_id', user.id)
+            .is('read_at', null);
+
           return {
             ...chat,
             other_user: otherUserProfile || null,
-            last_message: lastMessageWithSender
+            last_message: lastMessageWithSender,
+            unread_count: unreadCount || 0
           };
         })
       );
@@ -109,6 +120,36 @@ export const usePrivateChats = () => {
       setChats([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markChatAsRead = async (chatId: string) => {
+    if (!user) return;
+
+    try {
+      // Marcar todos los mensajes del chat como leídos
+      const { error } = await supabase
+        .from('private_messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('chat_id', chatId)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
+
+      if (error) {
+        console.error('Error marking messages as read:', error);
+        return;
+      }
+
+      // Actualizar el estado local
+      setChats(prevChats => 
+        prevChats.map(chat => 
+          chat.id === chatId 
+            ? { ...chat, unread_count: 0 }
+            : chat
+        )
+      );
+    } catch (error) {
+      console.error('Error marking chat as read:', error);
     }
   };
 
@@ -187,6 +228,7 @@ export const usePrivateChats = () => {
     chats,
     loading,
     getOrCreateChat,
+    markChatAsRead,
     refetch: fetchChats,
   };
 };

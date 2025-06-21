@@ -48,11 +48,31 @@ export const usePrivateMessages = (chatId: string) => {
       );
 
       setMessages(messagesWithProfiles);
+
+      // Marcar mensajes como leídos automáticamente cuando se cargan
+      if (user) {
+        await markMessagesAsRead();
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
       setMessages([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!user || !chatId) return;
+
+    try {
+      await supabase
+        .from('private_messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('chat_id', chatId)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
     }
   };
 
@@ -148,6 +168,11 @@ export const usePrivateMessages = (chatId: string) => {
             };
 
             setMessages(prev => [...prev, newMessage]);
+            
+            // Marcar como leído si no es nuestro mensaje
+            if (user && payload.new.sender_id !== user.id) {
+              await markMessagesAsRead();
+            }
           }
         )
         .subscribe();
@@ -156,12 +181,13 @@ export const usePrivateMessages = (chatId: string) => {
         supabase.removeChannel(channel);
       };
     }
-  }, [chatId]);
+  }, [chatId, user]);
 
   return {
     messages,
     loading,
     sendMessage,
+    markMessagesAsRead,
     refetch: fetchMessages,
   };
 };

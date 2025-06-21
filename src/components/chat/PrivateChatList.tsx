@@ -4,11 +4,12 @@ import { usePrivateChats } from '@/hooks/usePrivateChats';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { User, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PrivateChatList = () => {
-  const { chats, loading } = usePrivateChats();
+  const { chats, loading, markChatAsRead } = usePrivateChats();
   const navigate = useNavigate();
 
   const formatTime = (timestamp: string) => {
@@ -17,6 +18,14 @@ const PrivateChatList = () => {
       hour: '2-digit', 
       minute: '2-digit' 
     });
+  };
+
+  const handleChatClick = async (chat: any) => {
+    // Marcar como leído antes de navegar
+    if (chat.unread_count && chat.unread_count > 0) {
+      await markChatAsRead(chat.id);
+    }
+    navigate(`/chat/${chat.id}`);
   };
 
   if (loading) {
@@ -46,23 +55,33 @@ const PrivateChatList = () => {
           <Button
             key={chat.id}
             variant="ghost"
-            className="w-full justify-start h-auto p-3 hover:bg-accent"
-            onClick={() => navigate(`/chat/${chat.id}`)}
+            className="w-full justify-start h-auto p-3 hover:bg-accent relative"
+            onClick={() => handleChatClick(chat)}
           >
             <div className="flex items-center space-x-3 w-full">
-              <Avatar className="w-10 h-10">
-                <AvatarImage 
-                  src={chat.other_user?.avatar_url || ''} 
-                  alt={chat.other_user?.full_name || 'Usuario'} 
-                />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  <User className="w-5 h-5" />
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage 
+                    src={chat.other_user?.avatar_url || ''} 
+                    alt={chat.other_user?.full_name || 'Usuario'} 
+                  />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    <User className="w-5 h-5" />
+                  </AvatarFallback>
+                </Avatar>
+                {chat.unread_count && chat.unread_count > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
+                  >
+                    {chat.unread_count > 99 ? '99+' : chat.unread_count}
+                  </Badge>
+                )}
+              </div>
               
               <div className="flex-1 text-left">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-foreground">
+                  <span className={`font-medium ${chat.unread_count && chat.unread_count > 0 ? 'text-foreground font-bold' : 'text-foreground'}`}>
                     {chat.other_user?.full_name || 'Usuario'}
                   </span>
                   {chat.last_message && (
@@ -72,7 +91,7 @@ const PrivateChatList = () => {
                   )}
                 </div>
                 {chat.last_message && (
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className={`text-sm truncate ${chat.unread_count && chat.unread_count > 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                     {chat.last_message.content || 
                      (chat.last_message.media_type ? 
                       `📎 ${chat.last_message.media_type}` : 
