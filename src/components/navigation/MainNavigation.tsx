@@ -12,6 +12,7 @@ import {
   Users, 
   UserPlus,
   MessageCircle,
+  BookOpen,
   LogOut,
   Menu,
   X
@@ -44,6 +45,7 @@ const MainNavigation = () => {
       label: 'Chats Privados',
       badge: hasUnreadMessages ? '•' : null
     },
+    { path: '/library', icon: BookOpen, label: 'Biblioteca' },
   ];
 
   return (
