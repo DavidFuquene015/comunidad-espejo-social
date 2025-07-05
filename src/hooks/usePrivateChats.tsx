@@ -211,11 +211,25 @@ export const usePrivateChats = () => {
     if (user) {
       fetchChats();
 
-      // Escuchar cambios en tiempo real
+      // Escuchar cambios en tiempo real en ambas tablas
       const channel = supabase
         .channel('private-chats-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'private_chats' }, fetchChats)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'private_messages' }, fetchChats)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'private_chats' 
+        }, () => {
+          console.log('Private chats table changed, refetching...');
+          fetchChats();
+        })
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'private_messages' 
+        }, () => {
+          console.log('Private messages table changed, refetching...');
+          fetchChats();
+        })
         .subscribe();
 
       return () => {

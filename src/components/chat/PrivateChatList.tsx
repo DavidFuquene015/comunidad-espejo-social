@@ -69,14 +69,11 @@ const PrivateChatList = () => {
                     <User className="w-5 h-5" />
                   </AvatarFallback>
                 </Avatar>
-                {chat.unread_count && chat.unread_count > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
-                  >
-                    {chat.unread_count > 99 ? '99+' : chat.unread_count}
-                  </Badge>
-                )}
+                 {chat.unread_count && chat.unread_count > 0 && (
+                   <div 
+                     className="absolute -top-2 -right-2 h-3 w-3 bg-destructive rounded-full"
+                   />
+                 )}
               </div>
               
               <div className="flex-1 text-left">

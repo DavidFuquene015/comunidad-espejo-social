@@ -30,10 +30,8 @@ const MainNavigation = () => {
     navigate('/');
   };
 
-  // Calcular total de mensajes no leídos
-  const totalUnreadMessages = chats.reduce((total, chat) => {
-    return total + (chat.unread_count || 0);
-  }, 0);
+  // Verificar si hay chats con mensajes no leídos
+  const hasUnreadMessages = chats.some(chat => chat.unread_count && chat.unread_count > 0);
 
   const navigationItems = [
     { path: '/dashboard', icon: Home, label: 'Inicio' },
@@ -44,7 +42,7 @@ const MainNavigation = () => {
       path: '/chats', 
       icon: MessageCircle, 
       label: 'Chats Privados',
-      badge: totalUnreadMessages > 0 ? totalUnreadMessages : null
+      badge: hasUnreadMessages ? '•' : null
     },
   ];
 
@@ -90,7 +88,7 @@ const MainNavigation = () => {
                       variant="destructive" 
                       className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
                     >
-                      {item.badge > 99 ? '99+' : item.badge}
+                       {item.badge}
                     </Badge>
                   )}
                 </div>
@@ -163,7 +161,7 @@ const MainNavigation = () => {
                         variant="destructive" 
                         className="absolute top-2 right-4 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
                       >
-                        {item.badge > 99 ? '99+' : item.badge}
+                        {item.badge}
                       </Badge>
                     )}
                   </div>
