@@ -312,26 +312,26 @@ const AcademicLibrary = () => {
                     )}
                   </div>
                 </div>
-                <CardTitle className="text-lg line-clamp-2 text-foreground">{resource.title}</CardTitle>
-                <CardDescription className="line-clamp-3 text-muted-foreground">
+                <CardTitle className="text-lg line-clamp-2 text-gray-900 font-semibold">{resource.title}</CardTitle>
+                <CardDescription className="line-clamp-3 text-gray-700">
                   {resource.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {resource.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
+                    <Badge key={tag} variant="outline" className="text-xs text-gray-600 border-gray-300">
                       {tag}
                     </Badge>
                   ))}
                   {resource.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs text-gray-600 border-gray-300">
                       +{resource.tags.length - 3} más
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-gray-600">
                     📚 {resource.language}
                   </span>
                   <Badge variant="secondary" className="bg-green-100 text-green-800">
