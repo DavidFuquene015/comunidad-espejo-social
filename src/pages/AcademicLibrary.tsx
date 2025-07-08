@@ -312,8 +312,8 @@ const AcademicLibrary = () => {
                     )}
                   </div>
                 </div>
-                <CardTitle className="text-lg line-clamp-2">{resource.title}</CardTitle>
-                <CardDescription className="line-clamp-3">
+                <CardTitle className="text-lg line-clamp-2 text-foreground">{resource.title}</CardTitle>
+                <CardDescription className="line-clamp-3 text-muted-foreground">
                   {resource.description}
                 </CardDescription>
               </CardHeader>
