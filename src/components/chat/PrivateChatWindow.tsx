@@ -18,12 +18,17 @@ const PrivateChatWindow = () => {
   const { markChatAsRead } = usePrivateChats();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Solo hacer scroll automático si está habilitado
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (autoScroll) {
+      scrollToBottom();
+    }
+  }, [messages, autoScroll]);
 
   // Marcar el chat como leído cuando se abre
   useEffect(() => {
@@ -45,6 +50,7 @@ const PrivateChatWindow = () => {
     if (!newMessage.trim() || sending) return;
 
     setSending(true);
+    setAutoScroll(true); // Activar scroll automático al enviar mensaje
     await sendMessage(newMessage.trim());
     setNewMessage('');
     setSending(false);
@@ -55,12 +61,19 @@ const PrivateChatWindow = () => {
     if (!file) return;
 
     setSending(true);
+    setAutoScroll(true); // Activar scroll automático al enviar archivo
     await sendMessage('', file);
     setSending(false);
     
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget;
+    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 100;
+    setAutoScroll(isNearBottom);
   };
 
   if (loading) {
@@ -87,7 +100,7 @@ const PrivateChatWindow = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4" onScrollCapture={handleScroll}>
         <div className="space-y-1">
           {messages.map((message) => (
             <PrivateMessageBubble

@@ -136,11 +136,6 @@ export const usePrivateMessages = (chatId: string) => {
         });
         return;
       }
-
-      toast({
-        title: "¡Mensaje enviado!",
-        description: "Tu mensaje se ha enviado exitosamente.",
-      });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
