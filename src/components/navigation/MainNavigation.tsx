@@ -31,9 +31,6 @@ const MainNavigation = () => {
     navigate('/');
   };
 
-  // Verificar si hay chats con mensajes no leídos
-  const hasUnreadMessages = chats.some(chat => chat.unread_count && chat.unread_count > 0);
-
   const navigationItems = [
     { path: '/dashboard', icon: Home, label: 'Inicio' },
     { path: '/profile', icon: User, label: 'Perfil' },
@@ -42,8 +39,7 @@ const MainNavigation = () => {
     { 
       path: '/chats', 
       icon: MessageCircle, 
-      label: 'Chats Privados',
-      badge: hasUnreadMessages ? '•' : null
+      label: 'Chats Privados'
     },
     { path: '/library', icon: BookOpen, label: 'Biblioteca' },
   ];
@@ -74,7 +70,7 @@ const MainNavigation = () => {
               const isActive = location.pathname === item.path;
               
               return (
-                <div key={item.path} className="relative">
+                <div key={item.path}>
                   <Button
                     variant="ghost"
                     onClick={() => navigate(item.path)}
@@ -85,14 +81,6 @@ const MainNavigation = () => {
                     <Icon className="w-4 h-4 mr-2" />
                     {item.label}
                   </Button>
-                  {item.badge && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
-                    >
-                       {item.badge}
-                    </Badge>
-                  )}
                 </div>
               );
             })}
@@ -144,7 +132,7 @@ const MainNavigation = () => {
                 const isActive = location.pathname === item.path;
                 
                 return (
-                  <div key={item.path} className="relative">
+                  <div key={item.path}>
                     <Button
                       variant="ghost"
                       onClick={() => {
@@ -158,14 +146,6 @@ const MainNavigation = () => {
                       <Icon className="w-4 h-4 mr-2" />
                       {item.label}
                     </Button>
-                    {item.badge && (
-                      <Badge 
-                        variant="destructive" 
-                        className="absolute top-2 right-4 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold min-w-[20px] rounded-full"
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
                   </div>
                 );
               })}

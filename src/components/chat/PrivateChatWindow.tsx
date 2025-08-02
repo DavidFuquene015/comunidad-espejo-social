@@ -23,12 +23,16 @@ const PrivateChatWindow = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Solo hacer scroll automático si está habilitado
+  // Solo hacer scroll automático si está habilitado y es la primera carga
   useEffect(() => {
-    if (autoScroll) {
-      scrollToBottom();
+    if (autoScroll && messages.length > 0) {
+      // Solo hacer scroll suave después de la carga inicial
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [messages, autoScroll]);
+  }, [messages.length, autoScroll]);
 
   // Marcar el chat como leído cuando se abre
   useEffect(() => {
@@ -38,6 +42,8 @@ const PrivateChatWindow = () => {
         await markMessagesAsRead();
       };
       markAsRead();
+      // Activar autoscroll en la carga inicial
+      setAutoScroll(true);
     }
   }, [chatId, user, markChatAsRead, markMessagesAsRead]);
 
@@ -72,8 +78,13 @@ const PrivateChatWindow = () => {
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const element = event.currentTarget;
-    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 100;
-    setAutoScroll(isNearBottom);
+    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 50;
+    // Solo desactivar autoscroll si el usuario está scrolleando hacia arriba intencionalmente
+    if (!isNearBottom && element.scrollTop < element.scrollHeight - element.clientHeight - 100) {
+      setAutoScroll(false);
+    } else if (isNearBottom) {
+      setAutoScroll(true);
+    }
   };
 
   if (loading) {
