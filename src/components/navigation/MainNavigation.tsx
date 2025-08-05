@@ -15,7 +15,8 @@ import {
   BookOpen,
   LogOut,
   Menu,
-  X
+  X,
+  Car
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -41,6 +42,7 @@ const MainNavigation = () => {
       icon: MessageCircle, 
       label: 'Chats Privados'
     },
+    { path: '/shared-rides', icon: Car, label: 'Viajes Compartidos' },
     { path: '/library', icon: BookOpen, label: 'Biblioteca' },
   ];
 

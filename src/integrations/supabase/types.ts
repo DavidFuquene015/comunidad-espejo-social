@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
@@ -482,6 +482,153 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ride_matches: {
+        Row: {
+          created_at: string
+          id: string
+          offer_id: string
+          request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          offer_id: string
+          request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          offer_id?: string
+          request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_matches_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "ride_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_matches_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_offers: {
+        Row: {
+          available_seats: number
+          created_at: string
+          departure_time: string
+          description: string | null
+          destination_address: string
+          destination_latitude: number
+          destination_longitude: number
+          driver_id: string
+          id: string
+          origin_address: string
+          origin_latitude: number
+          origin_longitude: number
+          status: string
+          updated_at: string
+          vehicle_description: string | null
+        }
+        Insert: {
+          available_seats?: number
+          created_at?: string
+          departure_time: string
+          description?: string | null
+          destination_address: string
+          destination_latitude: number
+          destination_longitude: number
+          driver_id: string
+          id?: string
+          origin_address: string
+          origin_latitude: number
+          origin_longitude: number
+          status?: string
+          updated_at?: string
+          vehicle_description?: string | null
+        }
+        Update: {
+          available_seats?: number
+          created_at?: string
+          departure_time?: string
+          description?: string | null
+          destination_address?: string
+          destination_latitude?: number
+          destination_longitude?: number
+          driver_id?: string
+          id?: string
+          origin_address?: string
+          origin_latitude?: number
+          origin_longitude?: number
+          status?: string
+          updated_at?: string
+          vehicle_description?: string | null
+        }
+        Relationships: []
+      }
+      ride_requests: {
+        Row: {
+          created_at: string
+          departure_time: string
+          description: string | null
+          destination_address: string
+          destination_latitude: number
+          destination_longitude: number
+          id: string
+          max_passengers: number | null
+          origin_address: string
+          origin_latitude: number
+          origin_longitude: number
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          departure_time: string
+          description?: string | null
+          destination_address: string
+          destination_latitude: number
+          destination_longitude: number
+          id?: string
+          max_passengers?: number | null
+          origin_address: string
+          origin_latitude: number
+          origin_longitude: number
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          departure_time?: string
+          description?: string | null
+          destination_address?: string
+          destination_latitude?: number
+          destination_longitude?: number
+          id?: string
+          max_passengers?: number | null
+          origin_address?: string
+          origin_latitude?: number
+          origin_longitude?: number
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
