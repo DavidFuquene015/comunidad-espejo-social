@@ -7,6 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, User, Car, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useRides } from '@/hooks/useRides';
+import CreateRideRequestModal from '@/components/shared-rides/CreateRideRequestModal';
+import CreateRideOfferModal from '@/components/shared-rides/CreateRideOfferModal';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,48 +21,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-interface RideRequest {
-  id: string;
-  student_id: string;
-  origin_address: string;
-  destination_address: string;
-  departure_time: string;
-  description?: string;
-  max_passengers: number;
-  status: string;
-  created_at: string;
-  student?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  };
-}
-
-interface RideOffer {
-  id: string;
-  driver_id: string;
-  origin_address: string;
-  destination_address: string;
-  departure_time: string;
-  available_seats: number;
-  vehicle_description?: string;
-  description?: string;
-  status: string;
-  created_at: string;
-  driver?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  };
-}
-
 const SharedRides = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { rideRequests, rideOffers, loading, createRideMatch, refetch } = useRides();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
   const [activeTab, setActiveTab] = useState('requests');
-  const [rideRequests, setRideRequests] = useState<RideRequest[]>([]);
-  const [rideOffers, setRideOffers] = useState<RideOffer[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
+  const [showCreateOfferModal, setShowCreateOfferModal] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -79,6 +50,84 @@ const SharedRides = () => {
     };
   }, []);
 
+  // Update map markers when data changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      mapInstanceRef.current?.removeLayer(marker);
+    });
+    markersRef.current = [];
+
+    // Add markers for requests and offers
+    const allLocations: Array<{lat: number, lng: number, type: 'request' | 'offer', data: any}> = [];
+
+    // Add request markers
+    rideRequests.forEach(request => {
+      allLocations.push({
+        lat: request.origin_latitude,
+        lng: request.origin_longitude,
+        type: 'request',
+        data: request
+      });
+      allLocations.push({
+        lat: request.destination_latitude,
+        lng: request.destination_longitude,
+        type: 'request',
+        data: request
+      });
+    });
+
+    // Add offer markers
+    rideOffers.forEach(offer => {
+      allLocations.push({
+        lat: offer.origin_latitude,
+        lng: offer.origin_longitude,
+        type: 'offer',
+        data: offer
+      });
+      allLocations.push({
+        lat: offer.destination_latitude,
+        lng: offer.destination_longitude,
+        type: 'offer',
+        data: offer
+      });
+    });
+
+    // Create markers
+    allLocations.forEach(location => {
+      const icon = L.icon({
+        iconUrl: location.type === 'request' 
+          ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'
+          : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      const marker = L.marker([location.lat, location.lng], { icon })
+        .bindPopup(
+          `<div>
+            <strong>${location.type === 'request' ? 'Solicitud' : 'Oferta'}</strong><br/>
+            ${location.data.origin_address}<br/>
+            <em>→ ${location.data.destination_address}</em>
+          </div>`
+        );
+
+      mapInstanceRef.current?.addLayer(marker);
+      markersRef.current.push(marker);
+    });
+
+    // Fit map to show all markers
+    if (allLocations.length > 0) {
+      const group = new L.FeatureGroup(markersRef.current);
+      mapInstanceRef.current.fitBounds(group.getBounds().pad(0.1));
+    }
+  }, [rideRequests, rideOffers]);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
       weekday: 'short',
@@ -90,17 +139,19 @@ const SharedRides = () => {
     });
   };
 
-  const handleCreateRequest = () => {
+  const handleRequestRide = async (offerId: string) => {
+    // For now, just show a toast since we need the request ID
     toast({
-      title: "Próximamente",
-      description: "La funcionalidad para crear solicitudes estará disponible pronto.",
+      title: "Funcionalidad en desarrollo",
+      description: "Pronto podrás solicitar este viaje directamente.",
     });
   };
 
-  const handleCreateOffer = () => {
+  const handleOfferRide = async (requestId: string) => {
+    // For now, just show a toast since we need the offer ID
     toast({
-      title: "Próximamente", 
-      description: "La funcionalidad para crear ofertas estará disponible pronto.",
+      title: "Funcionalidad en desarrollo", 
+      description: "Pronto podrás ofrecer un viaje para esta solicitud.",
     });
   };
 
@@ -145,6 +196,16 @@ const SharedRides = () => {
               ref={mapRef}
               className="w-full h-96 lg:h-[500px] rounded-lg border"
             />
+            <div className="mt-2 flex gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span>Solicitudes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span>Ofertas</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -161,25 +222,29 @@ const SharedRides = () => {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="requests" className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  Solicitudes
+                  Solicitudes ({rideRequests.length})
                 </TabsTrigger>
                 <TabsTrigger value="offers" className="flex items-center gap-2">
                   <Car className="w-4 h-4" />
-                  Ofertas
+                  Ofertas ({rideOffers.length})
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="requests" className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Solicitudes de Viaje</h3>
-                  <Button onClick={handleCreateRequest} size="sm">
+                  <Button onClick={() => setShowCreateRequestModal(true)} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Solicitar Viaje
                   </Button>
                 </div>
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {rideRequests.length === 0 ? (
+                  {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Cargando solicitudes...</p>
+                    </div>
+                  ) : rideRequests.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>No hay solicitudes de viaje disponibles</p>
@@ -225,11 +290,17 @@ const SharedRides = () => {
                           </>
                         )}
 
-                        <div className="mt-3 flex gap-2">
-                          <Button size="sm" className="flex-1">
-                            Ofrecer Viaje
-                          </Button>
-                        </div>
+                        {request.student_id !== user.id && (
+                          <div className="mt-3 flex gap-2">
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleOfferRide(request.id)}
+                            >
+                              Ofrecer Viaje
+                            </Button>
+                          </div>
+                        )}
                       </Card>
                     ))
                   )}
@@ -239,14 +310,18 @@ const SharedRides = () => {
               <TabsContent value="offers" className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Ofertas de Viaje</h3>
-                  <Button onClick={handleCreateOffer} size="sm">
+                  <Button onClick={() => setShowCreateOfferModal(true)} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Ofrecer Viaje
                   </Button>
                 </div>
 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {rideOffers.length === 0 ? (
+                  {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Cargando ofertas...</p>
+                    </div>
+                  ) : rideOffers.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>No hay ofertas de viaje disponibles</p>
@@ -300,11 +375,17 @@ const SharedRides = () => {
                           </>
                         )}
 
-                        <div className="mt-3 flex gap-2">
-                          <Button size="sm" className="flex-1">
-                            Solicitar Viaje
-                          </Button>
-                        </div>
+                        {offer.driver_id !== user.id && (
+                          <div className="mt-3 flex gap-2">
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleRequestRide(offer.id)}
+                            >
+                              Solicitar Viaje
+                            </Button>
+                          </div>
+                        )}
                       </Card>
                     ))
                   )}
@@ -314,6 +395,19 @@ const SharedRides = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      <CreateRideRequestModal
+        open={showCreateRequestModal}
+        onOpenChange={setShowCreateRequestModal}
+        onSuccess={refetch}
+      />
+
+      <CreateRideOfferModal
+        open={showCreateOfferModal}
+        onOpenChange={setShowCreateOfferModal}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
