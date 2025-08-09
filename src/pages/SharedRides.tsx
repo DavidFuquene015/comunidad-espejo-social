@@ -9,8 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRides } from '@/hooks/useRides';
-import CreateRideRequestModal from '@/components/shared-rides/CreateRideRequestModal';
-import CreateRideOfferModal from '@/components/shared-rides/CreateRideOfferModal';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -31,8 +29,6 @@ const SharedRides = () => {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [activeTab, setActiveTab] = useState('requests');
-  const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
-  const [showCreateOfferModal, setShowCreateOfferModal] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -272,7 +268,7 @@ const SharedRides = () => {
               <TabsContent value="requests" className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Solicitudes de Viaje</h3>
-                  <Button onClick={() => setShowCreateRequestModal(true)} size="sm">
+                  <Button onClick={() => navigate('/create-ride-request')} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Solicitar Viaje
                   </Button>
@@ -349,7 +345,7 @@ const SharedRides = () => {
               <TabsContent value="offers" className="mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Ofertas de Viaje</h3>
-                  <Button onClick={() => setShowCreateOfferModal(true)} size="sm">
+                  <Button onClick={() => navigate('/create-ride-offer')} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Ofrecer Viaje
                   </Button>
@@ -433,21 +429,6 @@ const SharedRides = () => {
             </Tabs>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Modals con z-index alto para evitar sobreposición */}
-      <div className="relative z-50">
-        <CreateRideRequestModal
-          open={showCreateRequestModal}
-          onOpenChange={setShowCreateRequestModal}
-          onSuccess={refetch}
-        />
-
-        <CreateRideOfferModal
-          open={showCreateOfferModal}
-          onOpenChange={setShowCreateOfferModal}
-          onSuccess={refetch}
-        />
       </div>
     </div>
   );
