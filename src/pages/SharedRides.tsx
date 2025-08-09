@@ -217,9 +217,9 @@ const SharedRides = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Mapa */}
-        <Card className="lg:col-span-2">
+        <Card className="xl:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
@@ -229,7 +229,7 @@ const SharedRides = () => {
               Visualiza las rutas y ubicaciones de los viajes disponibles
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 relative">
             <div 
               ref={mapRef}
               className="w-full h-96 lg:h-[600px] rounded-b-lg"
@@ -249,7 +249,7 @@ const SharedRides = () => {
         </Card>
 
         {/* Lista de viajes */}
-        <Card className="lg:col-span-1">
+        <Card className="xl:col-span-1">
           <CardHeader>
             <CardTitle>Viajes Disponibles</CardTitle>
             <CardDescription>
