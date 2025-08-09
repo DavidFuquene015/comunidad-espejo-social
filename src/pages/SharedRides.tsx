@@ -34,15 +34,31 @@ const SharedRides = () => {
 
   // Initialize map
   useEffect(() => {
-    if (mapRef.current && !mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current).setView([4.711, -74.0721], 11); // Bogotá default
+    // Small delay to ensure the container is rendered
+    const timer = setTimeout(() => {
+      if (mapRef.current && !mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current = L.map(mapRef.current, {
+            center: [4.711, -74.0721], // Bogotá default
+            zoom: 11,
+            zoomControl: true,
+            attributionControl: true
+          });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(mapInstanceRef.current);
-    }
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          }).addTo(mapInstanceRef.current);
+
+          console.log('Map initialized successfully');
+        } catch (error) {
+          console.error('Error initializing map:', error);
+        }
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -179,9 +195,9 @@ const SharedRides = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Mapa */}
-        <Card className="lg:row-span-2">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
@@ -191,12 +207,13 @@ const SharedRides = () => {
               Visualiza las rutas y ubicaciones de los viajes disponibles
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <div 
               ref={mapRef}
-              className="w-full h-96 lg:h-[500px] rounded-lg border"
+              className="w-full h-96 lg:h-[600px] rounded-b-lg"
+              style={{ minHeight: '400px' }}
             />
-            <div className="mt-2 flex gap-4 text-sm text-muted-foreground">
+            <div className="p-4 flex gap-4 text-sm text-muted-foreground border-t">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <span>Solicitudes</span>
@@ -210,7 +227,7 @@ const SharedRides = () => {
         </Card>
 
         {/* Lista de viajes */}
-        <Card>
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Viajes Disponibles</CardTitle>
             <CardDescription>

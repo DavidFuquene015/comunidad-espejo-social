@@ -165,3 +165,24 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
+
+/* Leaflet map styles */
+.leaflet-container {
+  background-color: hsl(var(--muted));
+  border-radius: 0.5rem;
+}
+
+.leaflet-control-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.leaflet-popup-tip {
+  background-color: hsl(var(--popover));
+}

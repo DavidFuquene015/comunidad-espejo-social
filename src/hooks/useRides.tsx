@@ -66,10 +66,7 @@ export const useRides = () => {
     try {
       const { data, error } = await supabase
         .from('ride_requests')
-        .select(`
-          *,
-          student:profiles!ride_requests_student_id_fkey(full_name, avatar_url)
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -78,13 +75,23 @@ export const useRides = () => {
         return;
       }
 
-      // Transform the data to match our interface
-      const transformedData: RideRequest[] = (data || []).map(item => ({
-        ...item,
-        student: Array.isArray(item.student) ? item.student[0] : item.student
-      }));
+      // Fetch student profiles separately
+      const requestsWithProfiles = await Promise.all(
+        (data || []).map(async (request) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', request.student_id)
+            .single();
+          
+          return {
+            ...request,
+            student: profile || { full_name: 'Usuario', avatar_url: null }
+          };
+        })
+      );
 
-      setRideRequests(transformedData);
+      setRideRequests(requestsWithProfiles);
     } catch (error) {
       console.error('Error fetching ride requests:', error);
     }
@@ -94,10 +101,7 @@ export const useRides = () => {
     try {
       const { data, error } = await supabase
         .from('ride_offers')
-        .select(`
-          *,
-          driver:profiles!ride_offers_driver_id_fkey(full_name, avatar_url)
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -106,13 +110,23 @@ export const useRides = () => {
         return;
       }
 
-      // Transform the data to match our interface
-      const transformedData: RideOffer[] = (data || []).map(item => ({
-        ...item,
-        driver: Array.isArray(item.driver) ? item.driver[0] : item.driver
-      }));
+      // Fetch driver profiles separately
+      const offersWithProfiles = await Promise.all(
+        (data || []).map(async (offer) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', offer.driver_id)
+            .single();
+          
+          return {
+            ...offer,
+            driver: profile || { full_name: 'Conductor', avatar_url: null }
+          };
+        })
+      );
 
-      setRideOffers(transformedData);
+      setRideOffers(offersWithProfiles);
     } catch (error) {
       console.error('Error fetching ride offers:', error);
     }
