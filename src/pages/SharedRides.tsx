@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Clock, MapPin, User, Car, Plus } from 'lucide-react';
+import { Clock, MapPin, User, Car, Plus, ArrowLeft, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRides } from '@/hooks/useRides';
@@ -25,6 +26,7 @@ const SharedRides = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { rideRequests, rideOffers, loading, createRideMatch, refetch } = useRides();
+  const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -189,6 +191,26 @@ const SharedRides = () => {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <Home className="w-4 h-4" />
+            Inicio
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold mb-2">Viajes Compartidos</h1>
         <p className="text-muted-foreground">
           Encuentra o ofrece viajes compartidos para llegar a tu centro de formación SENA
@@ -413,18 +435,20 @@ const SharedRides = () => {
         </Card>
       </div>
 
-      {/* Modals */}
-      <CreateRideRequestModal
-        open={showCreateRequestModal}
-        onOpenChange={setShowCreateRequestModal}
-        onSuccess={refetch}
-      />
+      {/* Modals con z-index alto para evitar sobreposición */}
+      <div className="relative z-50">
+        <CreateRideRequestModal
+          open={showCreateRequestModal}
+          onOpenChange={setShowCreateRequestModal}
+          onSuccess={refetch}
+        />
 
-      <CreateRideOfferModal
-        open={showCreateOfferModal}
-        onOpenChange={setShowCreateOfferModal}
-        onSuccess={refetch}
-      />
+        <CreateRideOfferModal
+          open={showCreateOfferModal}
+          onOpenChange={setShowCreateOfferModal}
+          onSuccess={refetch}
+        />
+      </div>
     </div>
   );
 };
