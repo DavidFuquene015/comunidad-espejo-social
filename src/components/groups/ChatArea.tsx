@@ -217,25 +217,25 @@ const ChatArea = ({ channel }: ChatAreaProps) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-social-gradient">
+    <div className="h-full flex flex-col bg-social-gradient">
       {/* Channel Header */}
-      <div className="bg-white/5 backdrop-blur-sm border-b border-white/20 p-4">
+      <div className="bg-white/5 backdrop-blur-sm border-b border-white/20 p-4 flex-shrink-0">
         <h3 className="text-white font-semibold"># {channel.name}</h3>
         {channel.description && (
           <p className="text-white/70 text-sm">{channel.description}</p>
         )}
       </div>
 
-      {/* Messages Container with proper background */}
-      <div className="flex-1 overflow-hidden bg-social-gradient">
-        <div className="h-full overflow-y-auto p-4 space-y-4 bg-social-gradient">
+      {/* Messages Container with proper scrolling */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-4">
           <MessageList messages={messages} currentUserId={user?.id} />
           <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-white/20 p-4 bg-social-gradient">
+      <div className="border-t border-white/20 p-4 bg-social-gradient flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
           <input
             type="file"

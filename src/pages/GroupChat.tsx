@@ -148,7 +148,7 @@ const GroupChat = () => {
     <div className="min-h-screen bg-social-gradient">
       <MainNavigation />
       
-      <div className="flex fixed inset-0 top-16">
+      <div className="flex h-screen pt-16">
         {/* Fixed Sidebar */}
         <div className="fixed left-0 top-16 bottom-0 z-30">
           <GroupSidebar
@@ -162,9 +162,9 @@ const GroupChat = () => {
         </div>
 
         {/* Main Content with left offset for sidebar */}
-        <div className="flex-1 flex flex-col ml-60 bg-social-gradient">
+        <div className="flex-1 flex flex-col ml-60 h-full">
           {/* Header */}
-          <div className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-4 flex items-center justify-between">
+          <div className="bg-white/10 backdrop-blur-sm border-b border-white/20 p-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
@@ -189,7 +189,7 @@ const GroupChat = () => {
           </div>
 
           {/* Channel Content */}
-          <div className="flex-1 overflow-hidden bg-social-gradient">
+          <div className="flex-1 overflow-hidden">
             {selectedChannel?.type === 'text' && (
               <ChatArea channel={selectedChannel} />
             )}
