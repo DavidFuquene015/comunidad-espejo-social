@@ -42,9 +42,9 @@ const GroupSidebar = ({
   const voiceChannels = channels.filter(c => c.type === 'voice');
 
   return (
-    <div className="w-60 bg-gray-900/50 backdrop-blur-sm border-r border-white/20 flex flex-col">
+    <div className="w-60 h-full bg-gray-900/50 backdrop-blur-sm border-r border-white/20 flex flex-col">
       {/* Group Header */}
-      <div className="p-4 border-b border-white/20">
+      <div className="p-4 border-b border-white/20 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-white font-semibold truncate">{group.name}</h2>
           {isUserAdmin && (
@@ -60,8 +60,8 @@ const GroupSidebar = ({
         <p className="text-white/60 text-sm mt-1 truncate">{group.description}</p>
       </div>
 
-      {/* Channels */}
-      <div className="flex-1 overflow-y-auto p-2">
+      {/* Channels - Scrollable area */}
+      <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20">
         {/* Text Channels */}
         <div className="mb-4">
           <div className="flex items-center justify-between px-2 py-1 mb-1">
