@@ -66,51 +66,52 @@ const MainNavigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <div key={item.path}>
+          <div className="hidden md:flex items-center justify-center flex-1">
+            <div className="flex items-center space-x-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                return (
                   <Button
+                    key={item.path}
                     variant="ghost"
                     onClick={() => navigate(item.path)}
-                    className={`text-white hover:bg-white/10 hover:text-white ${
+                    className={`text-white hover:bg-white/10 hover:text-white px-3 py-2 text-sm font-medium transition-all ${
                       isActive ? 'bg-white/20 text-white' : 'text-white/80'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {item.label}
                   </Button>
-                </div>
-              );
-            })}
-
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <Avatar 
-                className="w-8 h-8 border-2 border-white/20 cursor-pointer"
-                onClick={() => navigate('/profile')}
-              >
-                <AvatarImage 
-                  src={user?.user_metadata?.avatar_url} 
-                  alt={user?.user_metadata?.full_name || 'Usuario'} 
-                />
-                <AvatarFallback className="bg-purple-500/20 text-white">
-                  <User className="w-4 h-4" />
-                </AvatarFallback>
-              </Avatar>
-              
-              <Button
-                variant="ghost"
-                onClick={handleSignOut}
-                className="text-white hover:bg-white/10 hover:text-white"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Salir
-              </Button>
+                );
+              })}
             </div>
+          </div>
+
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Avatar 
+              className="w-8 h-8 border-2 border-white/20 cursor-pointer hover:border-white/40 transition-colors"
+              onClick={() => navigate('/profile')}
+            >
+              <AvatarImage 
+                src={user?.user_metadata?.avatar_url} 
+                alt={user?.user_metadata?.full_name || 'Usuario'} 
+              />
+              <AvatarFallback className="bg-purple-500/20 text-white">
+                <User className="w-4 h-4" />
+              </AvatarFallback>
+            </Avatar>
+            
+            <Button
+              variant="ghost"
+              onClick={handleSignOut}
+              className="text-white hover:bg-white/10 hover:text-white px-3 py-2 text-sm font-medium"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Salir
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
