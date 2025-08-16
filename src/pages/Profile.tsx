@@ -10,6 +10,8 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileProjects from '@/components/profile/ProfileProjects';
 import ProfileFriends from '@/components/profile/ProfileFriends';
+import ProfileStories from '@/components/profile/ProfileStories';
+import ProfilePhotos from '@/components/profile/ProfilePhotos';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import AddProjectModal from '@/components/profile/AddProjectModal';
 
@@ -114,8 +116,14 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Stories Section */}
+        <ProfileStories profile={profile} />
+
         {/* Profile Content */}
         <ProfileInfo profile={profile} />
+
+        {/* Photos Section */}
+        <ProfilePhotos profile={profile} />
 
         {/* Projects Section */}
         <div className="bg-glass-card rounded-2xl p-6 border-white/20">

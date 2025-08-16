@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User, GraduationCap, MapPin, Calendar, Verified } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileHeaderProps {
   profile: any;
@@ -10,6 +11,44 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ profile, user }: ProfileHeaderProps) => {
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [projectsCount, setProjectsCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      fetchFriendsCount();
+      fetchProjectsCount();
+    }
+  }, [user]);
+
+  const fetchFriendsCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('friendships')
+        .select('*', { count: 'exact', head: true })
+        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`);
+
+      if (error) throw error;
+      setFriendsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching friends count:', error);
+    }
+  };
+
+  const fetchProjectsCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setProjectsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching projects count:', error);
+    }
+  };
+
   return (
     <div className="relative">
       {/* Cover Photo Area */}
@@ -74,15 +113,15 @@ const ProfileHeader = ({ profile, user }: ProfileHeaderProps) => {
           {/* Stats */}
           <div className="flex space-x-6 mt-4 md:mt-0">
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-2xl font-bold text-white">{projectsCount}</div>
               <div className="text-xs text-white/70">Proyectos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-2xl font-bold text-white">{friendsCount}</div>
               <div className="text-xs text-white/70">Amigos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-2xl font-bold text-white">12</div>
               <div className="text-xs text-white/70">Cursos</div>
             </div>
           </div>

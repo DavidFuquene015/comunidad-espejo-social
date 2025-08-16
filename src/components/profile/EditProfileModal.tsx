@@ -30,6 +30,12 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }: EditPro
     occupation: profile?.occupation || '',
     github_url: profile?.github_url || '',
     linkedin_url: profile?.linkedin_url || '',
+    phone: profile?.phone || '',
+    website_url: profile?.website_url || '',
+    skills: profile?.skills || '',
+    university: profile?.university || '',
+    graduation_year: profile?.graduation_year || '',
+    program: profile?.program || '',
   });
   
   const [loading, setLoading] = useState(false);
@@ -218,6 +224,83 @@ const EditProfileModal = ({ isOpen, onClose, profile, onProfileUpdate }: EditPro
               placeholder="https://linkedin.com/in/usuario"
               className="bg-gray-800 border-gray-600 text-white"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="phone" className="text-white">Teléfono</Label>
+              <Input
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="+57 300 123 4567"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="website_url" className="text-white">Sitio Web</Label>
+              <Input
+                id="website_url"
+                name="website_url"
+                value={formData.website_url}
+                onChange={handleInputChange}
+                placeholder="https://miportfolio.com"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="skills" className="text-white">Habilidades</Label>
+            <Input
+              id="skills"
+              name="skills"
+              value={formData.skills}
+              onChange={handleInputChange}
+              placeholder="JavaScript, React, Python, etc."
+              className="bg-gray-800 border-gray-600 text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="university" className="text-white">Universidad/SENA</Label>
+              <Input
+                id="university"
+                name="university"
+                value={formData.university}
+                onChange={handleInputChange}
+                placeholder="SENA Centro..."
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="program" className="text-white">Programa</Label>
+              <Input
+                id="program"
+                name="program"
+                value={formData.program}
+                onChange={handleInputChange}
+                placeholder="Desarrollo de Software"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="graduation_year" className="text-white">Año de Graduación</Label>
+              <Input
+                id="graduation_year"
+                name="graduation_year"
+                type="number"
+                value={formData.graduation_year}
+                onChange={handleInputChange}
+                placeholder="2024"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

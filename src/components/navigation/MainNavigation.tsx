@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrivateChats } from '@/hooks/usePrivateChats';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,7 +19,6 @@ import {
   X,
   Car
 } from 'lucide-react';
-import { useState } from 'react';
 
 const MainNavigation = () => {
   const { user, signOut } = useAuth();
@@ -26,6 +26,28 @@ const MainNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -96,7 +118,7 @@ const MainNavigation = () => {
               onClick={() => navigate('/profile')}
             >
               <AvatarImage 
-                src={user?.user_metadata?.avatar_url} 
+                src={profile?.avatar_url || user?.user_metadata?.avatar_url} 
                 alt={user?.user_metadata?.full_name || 'Usuario'} 
               />
               <AvatarFallback className="bg-purple-500/20 text-white">
