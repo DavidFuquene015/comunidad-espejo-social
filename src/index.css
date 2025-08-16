@@ -120,12 +120,33 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Gradiente social actualizado */
+  /* Gradientes para redes sociales profesionales */
   .bg-social-gradient {
     background: linear-gradient(135deg, 
       hsl(var(--primary)) 0%, 
       hsl(var(--primary) / 0.8) 50%, 
       hsl(var(--background)) 100%);
+  }
+
+  .bg-profile-header {
+    background: linear-gradient(135deg, 
+      hsl(262 80% 60%) 0%,
+      hsl(280 70% 50%) 25%,
+      hsl(298 80% 55%) 50%,
+      hsl(320 70% 50%) 75%,
+      hsl(340 80% 55%) 100%);
+  }
+
+  .bg-glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .bg-profile-stats {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 100%);
   }
 
   [data-theme="light"] .bg-social-gradient {
@@ -135,11 +156,23 @@
       hsl(0 0% 100%) 100%);
   }
 
+  [data-theme="light"] .bg-glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
   [data-theme="dark"] .bg-social-gradient {
     background: linear-gradient(135deg, 
       hsl(262 83% 58%) 0%, 
       hsl(262 83% 58% / 0.3) 30%, 
       hsl(222.2 84% 4.9%) 100%);
+  }
+
+  [data-theme="dark"] .bg-glass-card {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Edit, Plus } from 'lucide-react';
+import { Edit, Plus, Trophy, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MainNavigation from '@/components/navigation/MainNavigation';
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -91,41 +91,58 @@ const Profile = () => {
     <div className="min-h-screen bg-social-gradient">
       <MainNavigation />
       
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Profile Header */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-          <div className="flex justify-between items-start mb-6">
-            <ProfileHeader profile={profile} user={user} />
+      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+        {/* Profile Header Card */}
+        <div className="bg-glass-card rounded-2xl overflow-hidden">
+          <ProfileHeader profile={profile} user={user} />
+          
+          {/* Action Buttons */}
+          <div className="px-6 pb-6 flex justify-end space-x-3">
             <Button
               onClick={() => setIsEditModalOpen(true)}
-              variant="outline"
-              className="bg-transparent border-white/20 text-gray-900 hover:bg-white/10 hover:text-gray-900"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               <Edit className="w-4 h-4 mr-2" />
               Editar Perfil
             </Button>
+            <Button
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              Compartir Perfil
+            </Button>
           </div>
-
-          <ProfileInfo profile={profile} />
         </div>
 
-        {/* Friends Section */}
-        <ProfileFriends />
+        {/* Profile Content */}
+        <ProfileInfo profile={profile} />
 
         {/* Projects Section */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+        <div className="bg-glass-card rounded-2xl p-6 border-white/20">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Mis Proyectos</h2>
+            <h2 className="text-2xl font-bold text-white flex items-center">
+              <Trophy className="w-6 h-6 mr-2 text-yellow-400" />
+              Mis Proyectos
+            </h2>
             <Button
               onClick={() => setIsAddProjectModalOpen(true)}
-              className="bg-purple-500 hover:bg-purple-600 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Agregar Proyecto
+              Nuevo Proyecto
             </Button>
           </div>
 
           <ProfileProjects projects={projects} onProjectUpdate={fetchProjects} />
+        </div>
+
+        {/* Friends Section */}
+        <div className="bg-glass-card rounded-2xl p-6 border-white/20">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            <Users className="w-6 h-6 mr-2 text-blue-400" />
+            Red de Contactos
+          </h2>
+          <ProfileFriends />
         </div>
 
         {/* Modals */}

@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { User, GraduationCap, MapPin, Calendar, Verified } from 'lucide-react';
 
 interface ProfileHeaderProps {
   profile: any;
@@ -10,26 +11,82 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ profile, user }: ProfileHeaderProps) => {
   return (
-    <div className="flex items-center space-x-6">
-      <div className="relative">
-        <Avatar className="w-24 h-24 border-4 border-white/20">
-          <AvatarImage 
-            src={profile?.avatar_url} 
-            alt={profile?.full_name || 'Usuario'} 
-          />
-          <AvatarFallback className="bg-purple-500/20 text-white text-2xl">
-            <User className="w-12 h-12" />
-          </AvatarFallback>
-        </Avatar>
+    <div className="relative">
+      {/* Cover Photo Area */}
+      <div className="h-48 bg-profile-header rounded-t-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
       </div>
       
-      <div>
-        <h2 className="text-3xl font-bold text-white mb-2">
-          {profile?.full_name || 'Usuario'}
-        </h2>
-        <p className="text-white/70 text-lg mb-1">{profile?.occupation || 'Sin ocupación especificada'}</p>
-        <p className="text-white/60">{profile?.location || 'Ubicación no especificada'}</p>
-        <p className="text-white/60 text-sm mt-2">{user?.email}</p>
+      {/* Profile Content */}
+      <div className="relative px-6 pb-6 -mt-16">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between">
+          {/* Avatar and Basic Info */}
+          <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full bg-white p-1 shadow-2xl">
+                <Avatar className="w-full h-full">
+                  <AvatarImage 
+                    src={profile?.avatar_url} 
+                    alt={profile?.full_name || 'Usuario'} 
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-3xl">
+                    <User className="w-16 h-16" />
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              {/* Status Indicator */}
+              <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-3xl font-bold text-white">
+                  {profile?.full_name || 'Usuario'}
+                </h1>
+                <Verified className="w-6 h-6 text-blue-400" />
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                {profile?.occupation && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <GraduationCap className="w-3 h-3 mr-1" />
+                    {profile.occupation}
+                  </Badge>
+                )}
+                {profile?.location && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {profile.location}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  Aprendiz SENA
+                </Badge>
+              </div>
+              
+              <p className="text-white/80 text-sm">{user?.email}</p>
+            </div>
+          </div>
+          
+          {/* Stats */}
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-xs text-white/70">Proyectos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-xs text-white/70">Amigos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-xs text-white/70">Cursos</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
