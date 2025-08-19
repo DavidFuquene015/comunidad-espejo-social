@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -404,11 +404,17 @@ export type Database = {
           created_at: string
           full_name: string | null
           github_url: string | null
+          graduation_year: number | null
           id: string
           linkedin_url: string | null
           location: string | null
           occupation: string | null
+          phone: string | null
+          program: string | null
+          skills: string | null
+          university: string | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -416,11 +422,17 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           github_url?: string | null
+          graduation_year?: number | null
           id: string
           linkedin_url?: string | null
           location?: string | null
           occupation?: string | null
+          phone?: string | null
+          program?: string | null
+          skills?: string | null
+          university?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -428,11 +440,17 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           github_url?: string | null
+          graduation_year?: number | null
           id?: string
           linkedin_url?: string | null
           location?: string | null
           occupation?: string | null
+          phone?: string | null
+          program?: string | null
+          skills?: string | null
+          university?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -535,6 +553,7 @@ export type Database = {
           destination_latitude: number
           destination_longitude: number
           driver_id: string
+          expires_at: string | null
           id: string
           origin_address: string
           origin_latitude: number
@@ -552,6 +571,7 @@ export type Database = {
           destination_latitude: number
           destination_longitude: number
           driver_id: string
+          expires_at?: string | null
           id?: string
           origin_address: string
           origin_latitude: number
@@ -569,6 +589,7 @@ export type Database = {
           destination_latitude?: number
           destination_longitude?: number
           driver_id?: string
+          expires_at?: string | null
           id?: string
           origin_address?: string
           origin_latitude?: number
@@ -587,6 +608,7 @@ export type Database = {
           destination_address: string
           destination_latitude: number
           destination_longitude: number
+          expires_at: string | null
           id: string
           max_passengers: number | null
           origin_address: string
@@ -603,6 +625,7 @@ export type Database = {
           destination_address: string
           destination_latitude: number
           destination_longitude: number
+          expires_at?: string | null
           id?: string
           max_passengers?: number | null
           origin_address: string
@@ -619,6 +642,7 @@ export type Database = {
           destination_address?: string
           destination_latitude?: number
           destination_longitude?: number
+          expires_at?: string | null
           id?: string
           max_passengers?: number | null
           origin_address?: string
@@ -630,11 +654,45 @@ export type Database = {
         }
         Relationships: []
       }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_content: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_channel_group_id: {
         Args: { channel_id: string }
         Returns: string
@@ -642,10 +700,10 @@ export type Database = {
       get_suggested_users: {
         Args: { user_id: string }
         Returns: {
-          id: string
-          full_name: string
-          bio: string
           avatar_url: string
+          bio: string
+          full_name: string
+          id: string
         }[]
       }
       is_group_admin: {

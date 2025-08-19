@@ -68,6 +68,7 @@ export const useRides = () => {
         .from('ride_requests')
         .select('*')
         .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -103,6 +104,7 @@ export const useRides = () => {
         .from('ride_offers')
         .select('*')
         .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
       if (error) {
