@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      books: {
+        Row: {
+          author: string
+          created_at: string
+          description: string | null
+          genre: string | null
+          id: string
+          isbn: string | null
+          publication_year: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          created_at?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          isbn?: string | null
+          publication_year?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          created_at?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          isbn?: string | null
+          publication_year?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       channels: {
         Row: {
           created_at: string
