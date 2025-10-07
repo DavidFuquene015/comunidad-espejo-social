@@ -37,34 +37,13 @@ const ProfileFriends = ({ userId }: ProfileFriendsProps) => {
 
   const fetchFriends = async () => {
     try {
-      // Obtener las amistades del usuario
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('user1_id, user2_id')
-        .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`);
+      const { data, error } = await supabase.functions.invoke(`profiles-api/friends/${currentUserId}`, {
+        method: 'GET',
+      });
 
-      if (friendshipsError) throw friendshipsError;
+      if (error) throw error;
 
-      if (!friendships || friendships.length === 0) {
-        setFriends([]);
-        setLoading(false);
-        return;
-      }
-
-      // Obtener los IDs de los amigos
-      const friendIds = friendships.map(friendship => 
-        friendship.user1_id === currentUserId ? friendship.user2_id : friendship.user1_id
-      );
-
-      // Obtener los perfiles de los amigos
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, bio')
-        .in('id', friendIds);
-
-      if (profilesError) throw profilesError;
-
-      setFriends(profiles || []);
+      setFriends(data || []);
     } catch (error) {
       console.error('Error fetching friends:', error);
       toast({

@@ -15,11 +15,9 @@ export const usePrivateMessages = (chatId: string) => {
     if (!chatId) return;
 
     try {
-      const { data: messagesData, error } = await supabase
-        .from('private_messages')
-        .select('*, read_at')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
+      const { data, error } = await supabase.functions.invoke(`chats-api/messages/${chatId}`, {
+        method: 'GET',
+      });
 
       if (error) {
         console.error('Error fetching messages:', error);
@@ -27,27 +25,7 @@ export const usePrivateMessages = (chatId: string) => {
         return;
       }
 
-      if (!messagesData) {
-        setMessages([]);
-        return;
-      }
-
-      const messagesWithProfiles = await Promise.all(
-        messagesData.map(async (message) => {
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', message.sender_id)
-            .single();
-
-          return {
-            ...message,
-            sender: senderProfile || { full_name: null, avatar_url: null }
-          };
-        })
-      );
-
-      setMessages(messagesWithProfiles);
+      setMessages(data || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
       setMessages([]);
@@ -60,20 +38,15 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user || !chatId) return;
 
     try {
-      // Solo marcar mensajes que no son míos y que no han sido leídos
-      const { error } = await supabase
-        .from('private_messages')
-        .update({ read_at: new Date().toISOString() })
-        .eq('chat_id', chatId)
-        .neq('sender_id', user.id)
-        .is('read_at', null);
+      const { error } = await supabase.functions.invoke(`chats-api/messages/read/${chatId}`, {
+        method: 'PUT',
+      });
 
       if (error) {
         console.error('Error marking messages as read:', error);
         return;
       }
 
-      // Actualizar el estado local inmediatamente
       setMessages(prev => 
         prev.map(msg => 
           msg.sender_id !== user.id && !msg.read_at
@@ -117,15 +90,15 @@ export const usePrivateMessages = (chatId: string) => {
         }
       }
 
-      const { error } = await supabase
-        .from('private_messages')
-        .insert({
+      const { error } = await supabase.functions.invoke('chats-api/messages', {
+        method: 'POST',
+        body: {
           chat_id: chatId,
-          sender_id: user.id,
           content: content || null,
           media_url: mediaUrl,
           media_type: mediaType,
-        });
+        },
+      });
 
       if (error) {
         console.error('Error sending message:', error);

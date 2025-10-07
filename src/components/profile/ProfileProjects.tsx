@@ -16,10 +16,9 @@ const ProfileProjects = ({ projects, onProjectUpdate }: ProfileProjectsProps) =>
 
   const handleDeleteProject = async (projectId: string) => {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
+      const { error } = await supabase.functions.invoke(`profiles-api/projects/${projectId}`, {
+        method: 'DELETE',
+      });
 
       if (error) throw error;
 

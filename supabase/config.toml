@@ -70,3 +70,18 @@ verify_jwt = false
 
 [functions.books-api]
 verify_jwt = false
+
+[functions.stories-api]
+verify_jwt = true
+
+[functions.posts-api]
+verify_jwt = true
+
+[functions.chats-api]
+verify_jwt = true
+
+[functions.rides-api]
+verify_jwt = true
+
+[functions.profiles-api]
+verify_jwt = true

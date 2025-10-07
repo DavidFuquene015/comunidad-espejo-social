@@ -23,13 +23,12 @@ const ProfileHeader = ({ profile, user }: ProfileHeaderProps) => {
 
   const fetchFriendsCount = async () => {
     try {
-      const { count, error } = await supabase
-        .from('friendships')
-        .select('*', { count: 'exact', head: true })
-        .or(`user1_id.eq.${user?.id},user2_id.eq.${user?.id}`);
+      const { data, error } = await supabase.functions.invoke(`profiles-api/friends-count/${user?.id}`, {
+        method: 'GET',
+      });
 
       if (error) throw error;
-      setFriendsCount(count || 0);
+      setFriendsCount(data?.count || 0);
     } catch (error) {
       console.error('Error fetching friends count:', error);
     }
@@ -37,13 +36,12 @@ const ProfileHeader = ({ profile, user }: ProfileHeaderProps) => {
 
   const fetchProjectsCount = async () => {
     try {
-      const { count, error } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
+      const { data, error } = await supabase.functions.invoke(`profiles-api/projects-count/${user?.id}`, {
+        method: 'GET',
+      });
 
       if (error) throw error;
-      setProjectsCount(count || 0);
+      setProjectsCount(data?.count || 0);
     } catch (error) {
       console.error('Error fetching projects count:', error);
     }

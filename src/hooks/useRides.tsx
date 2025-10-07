@@ -64,35 +64,16 @@ export const useRides = () => {
 
   const fetchRideRequests = async () => {
     try {
-      const { data, error } = await supabase
-        .from('ride_requests')
-        .select('*')
-        .eq('status', 'active')
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('rides-api/requests', {
+        method: 'GET',
+      });
 
       if (error) {
         console.error('Error fetching ride requests:', error);
         return;
       }
 
-      // Fetch student profiles separately
-      const requestsWithProfiles = await Promise.all(
-        (data || []).map(async (request) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', request.student_id)
-            .single();
-          
-          return {
-            ...request,
-            student: profile || { full_name: 'Usuario', avatar_url: null }
-          };
-        })
-      );
-
-      setRideRequests(requestsWithProfiles);
+      setRideRequests(data || []);
     } catch (error) {
       console.error('Error fetching ride requests:', error);
     }
@@ -100,35 +81,16 @@ export const useRides = () => {
 
   const fetchRideOffers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('ride_offers')
-        .select('*')
-        .eq('status', 'active')
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('rides-api/offers', {
+        method: 'GET',
+      });
 
       if (error) {
         console.error('Error fetching ride offers:', error);
         return;
       }
 
-      // Fetch driver profiles separately
-      const offersWithProfiles = await Promise.all(
-        (data || []).map(async (offer) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', offer.driver_id)
-            .single();
-          
-          return {
-            ...offer,
-            driver: profile || { full_name: 'Conductor', avatar_url: null }
-          };
-        })
-      );
-
-      setRideOffers(offersWithProfiles);
+      setRideOffers(data || []);
     } catch (error) {
       console.error('Error fetching ride offers:', error);
     }
@@ -138,13 +100,13 @@ export const useRides = () => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('ride_matches')
-        .insert({
+      const { error } = await supabase.functions.invoke('rides-api/matches', {
+        method: 'POST',
+        body: {
           request_id: requestId,
           offer_id: offerId,
-          status: 'pending'
-        });
+        },
+      });
 
       if (error) {
         toast({

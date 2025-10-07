@@ -28,34 +28,16 @@ export const useStories = () => {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('stories')
-        .select('*')
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('stories-api/stories', {
+        method: 'GET',
+      });
 
       if (error) {
         console.error('Error fetching stories:', error);
         return;
       }
 
-      // Fetch profiles separately
-      const storiesWithProfiles = await Promise.all(
-        (data || []).map(async (story) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', story.user_id)
-            .single();
-          
-          return {
-            ...story,
-            profiles: profile || { full_name: 'Usuario', avatar_url: null }
-          };
-        })
-      );
-
-      setStories(storiesWithProfiles);
+      setStories(data || []);
     } catch (error) {
       console.error('Error fetching stories:', error);
     } finally {
@@ -91,16 +73,14 @@ export const useStories = () => {
 
       const mediaType = file.type.startsWith('video') ? 'video' : 'image';
 
-      const { data, error } = await supabase
-        .from('stories')
-        .insert({
-          user_id: user.id,
+      const { data, error } = await supabase.functions.invoke('stories-api/stories', {
+        method: 'POST',
+        body: {
           media_url: publicUrl,
           media_type: mediaType,
           caption: caption || null,
-        })
-        .select()
-        .single();
+        },
+      });
 
       if (error) {
         console.error('Error creating story:', error);
@@ -132,10 +112,9 @@ export const useStories = () => {
 
   const deleteStory = async (storyId: string) => {
     try {
-      const { error } = await supabase
-        .from('stories')
-        .delete()
-        .eq('id', storyId);
+      const { error } = await supabase.functions.invoke(`stories-api/stories/${storyId}`, {
+        method: 'DELETE',
+      });
 
       if (error) {
         console.error('Error deleting story:', error);

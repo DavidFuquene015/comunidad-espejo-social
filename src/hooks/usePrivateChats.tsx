@@ -44,12 +44,9 @@ export const usePrivateChats = () => {
     if (!user) return;
 
     try {
-      // Obtener chats privados del usuario
-      const { data: chatData, error } = await supabase
-        .from('private_chats')
-        .select('*')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .order('updated_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('chats-api/chats', {
+        method: 'GET',
+      });
 
       if (error) {
         console.error('Error fetching chats:', error);
@@ -57,64 +54,7 @@ export const usePrivateChats = () => {
         return;
       }
 
-      if (!chatData || chatData.length === 0) {
-        setChats([]);
-        return;
-      }
-
-      const chatsWithUsers = await Promise.all(
-        chatData.map(async (chat) => {
-          const otherUserId = chat.user1_id === user.id ? chat.user2_id : chat.user1_id;
-          
-          const { data: otherUserProfile } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url')
-            .eq('id', otherUserId)
-            .single();
-
-          // Obtener último mensaje con información del remitente
-          const { data: lastMessage } = await supabase
-            .from('private_messages')
-            .select('*, read_at')
-            .eq('chat_id', chat.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          let lastMessageWithSender: PrivateMessage | undefined;
-          
-          if (lastMessage) {
-            // Obtener perfil del remitente del último mensaje
-            const { data: senderProfile } = await supabase
-              .from('profiles')
-              .select('full_name, avatar_url')
-              .eq('id', lastMessage.sender_id)
-              .single();
-
-            lastMessageWithSender = {
-              ...lastMessage,
-              sender: senderProfile || { full_name: null, avatar_url: null }
-            };
-          }
-
-          // Contar mensajes no leídos (mensajes donde read_at es null y el sender no es el usuario actual)
-          const { count: unreadCount } = await supabase
-            .from('private_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('chat_id', chat.id)
-            .neq('sender_id', user.id)
-            .is('read_at', null);
-
-          return {
-            ...chat,
-            other_user: otherUserProfile || null,
-            last_message: lastMessageWithSender,
-            unread_count: unreadCount || 0
-          };
-        })
-      );
-
-      setChats(chatsWithUsers);
+      setChats(data || []);
     } catch (error) {
       console.error('Error fetching chats:', error);
       setChats([]);
@@ -127,20 +67,15 @@ export const usePrivateChats = () => {
     if (!user) return;
 
     try {
-      // Marcar todos los mensajes del chat como leídos
-      const { error } = await supabase
-        .from('private_messages')
-        .update({ read_at: new Date().toISOString() })
-        .eq('chat_id', chatId)
-        .neq('sender_id', user.id)
-        .is('read_at', null);
+      const { error } = await supabase.functions.invoke(`chats-api/messages/read/${chatId}`, {
+        method: 'PUT',
+      });
 
       if (error) {
         console.error('Error marking messages as read:', error);
         return;
       }
 
-      // Actualizar el estado local inmediatamente
       setChats(prevChats => 
         prevChats.map(chat => 
           chat.id === chatId 
@@ -157,36 +92,13 @@ export const usePrivateChats = () => {
     try {
       if (!user) return null;
 
-      // Primero intentar encontrar un chat existente
-      const { data: existingChatData, error: searchError } = await supabase
-        .from('private_chats')
-        .select('id')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${friendId}),and(user1_id.eq.${friendId},user2_id.eq.${user.id})`)
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke('chats-api/chats', {
+        method: 'POST',
+        body: { friend_id: friendId },
+      });
 
-      if (searchError) {
-        console.log('Error searching for existing chat:', searchError);
-      }
-
-      if (existingChatData?.id) {
-        return existingChatData.id;
-      }
-
-      // Si no existe, crear uno nuevo
-      const user1_id = user.id < friendId ? user.id : friendId;
-      const user2_id = user.id < friendId ? friendId : user.id;
-
-      const { data: newChatData, error: createError } = await supabase
-        .from('private_chats')
-        .insert({
-          user1_id,
-          user2_id
-        })
-        .select('id')
-        .single();
-
-      if (createError) {
-        console.error('Error creating chat:', createError);
+      if (error) {
+        console.error('Error creating chat:', error);
         toast({
           title: "Error",
           description: "No se pudo crear el chat.",
@@ -195,7 +107,7 @@ export const usePrivateChats = () => {
         return null;
       }
       
-      return newChatData?.id || null;
+      return data?.chat_id || null;
     } catch (error) {
       console.error('Error creating chat:', error);
       toast({

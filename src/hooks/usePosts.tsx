@@ -48,65 +48,13 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data: postsData, error: postsError } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('posts-api/posts', {
+        method: 'GET',
+      });
 
-      if (postsError) throw postsError;
+      if (error) throw error;
 
-      const postsWithDetails = await Promise.all(
-        (postsData || []).map(async (post) => {
-          // Fetch profile for the post author
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', post.user_id)
-            .single();
-
-          // Fetch reactions
-          const { data: reactionsData } = await supabase
-            .from('post_reactions')
-            .select('*')
-            .eq('post_id', post.id);
-
-          // Fetch comments with profiles
-          const { data: commentsData } = await supabase
-            .from('post_comments')
-            .select('*')
-            .eq('post_id', post.id)
-            .order('created_at', { ascending: true });
-
-          // Fetch profiles for comment authors
-          const commentsWithProfiles = await Promise.all(
-            (commentsData || []).map(async (comment) => {
-              const { data: commentProfile } = await supabase
-                .from('profiles')
-                .select('full_name, avatar_url')
-                .eq('id', comment.user_id)
-                .single();
-
-              return {
-                ...comment,
-                profiles: commentProfile || { full_name: null, avatar_url: null }
-              };
-            })
-          );
-
-          return {
-            ...post,
-            profiles: profileData || { full_name: null, avatar_url: null },
-            reactions: reactionsData || [],
-            comments: commentsWithProfiles,
-            _count: {
-              reactions: reactionsData?.length || 0,
-              comments: commentsWithProfiles?.length || 0,
-            },
-          };
-        })
-      );
-
-      setPosts(postsWithDetails);
+      setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -147,14 +95,14 @@ export const usePosts = () => {
         else if (mediaFile.type.startsWith('audio/')) mediaType = 'audio';
       }
 
-      const { error } = await supabase
-        .from('posts')
-        .insert({
-          user_id: user.id,
+      const { error } = await supabase.functions.invoke('posts-api/posts', {
+        method: 'POST',
+        body: {
           content: content || null,
           media_url: mediaUrl,
           media_type: mediaType,
-        });
+        },
+      });
 
       if (error) throw error;
 
@@ -182,24 +130,16 @@ export const usePosts = () => {
         .find(p => p.id === postId)?.reactions
         .find(r => r.user_id === user.id && r.emoji === emoji);
 
-      if (existingReaction) {
-        const { error } = await supabase
-          .from('post_reactions')
-          .delete()
-          .eq('id', existingReaction.id);
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('post_reactions')
-          .insert({
-            post_id: postId,
-            user_id: user.id,
-            emoji,
-          });
-        
-        if (error) throw error;
-      }
+      const { error } = await supabase.functions.invoke('posts-api/reactions', {
+        method: 'POST',
+        body: {
+          post_id: postId,
+          emoji,
+          remove: !!existingReaction,
+        },
+      });
+      
+      if (error) throw error;
 
       fetchPosts();
     } catch (error) {
@@ -211,13 +151,13 @@ export const usePosts = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('post_comments')
-        .insert({
+      const { error } = await supabase.functions.invoke('posts-api/comments', {
+        method: 'POST',
+        body: {
           post_id: postId,
-          user_id: user.id,
           content,
-        });
+        },
+      });
 
       if (error) throw error;
       fetchPosts();
