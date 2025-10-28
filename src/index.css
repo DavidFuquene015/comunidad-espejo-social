@@ -7,7 +7,7 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
+    --card: 0 0% 100% / 0.7;
     --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
@@ -38,7 +38,7 @@
   .dark {
     --background: 0 0% 8%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
+    --card: 0 0% 0% / 0.3;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 98%;
@@ -68,7 +68,7 @@
   [data-theme="light"] {
     --background: 0 0% 100%;
     --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
+    --card: 0 0% 100% / 0.7;
     --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
@@ -90,7 +90,7 @@
   [data-theme="dark"] {
     --background: 0 0% 8%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
+    --card: 0 0% 0% / 0.3;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 98%;
@@ -120,12 +120,12 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Gradientes con colores SENA */
+  /* Gradientes con colores SENA - Mejorados */
   .bg-social-gradient {
     background: linear-gradient(135deg, 
       hsl(94 100% 33%) 0%, 
-      hsl(154 100% 24%) 50%, 
-      hsl(var(--background)) 100%);
+      hsl(154 100% 30%) 50%, 
+      hsl(154 100% 20%) 100%);
   }
 
   .bg-profile-header {
@@ -137,9 +137,9 @@
   }
 
   .bg-glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .bg-profile-stats {
@@ -150,27 +150,27 @@
 
   [data-theme="light"] .bg-social-gradient {
     background: linear-gradient(135deg, 
-      hsl(94 100% 33%) 0%, 
-      hsl(94 100% 33% / 0.1) 30%, 
-      hsl(0 0% 100%) 100%);
+      hsl(94 100% 40%) 0%, 
+      hsl(154 100% 35%) 50%, 
+      hsl(154 100% 25%) 100%);
   }
 
   [data-theme="light"] .bg-glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   [data-theme="dark"] .bg-social-gradient {
     background: linear-gradient(135deg, 
       hsl(94 100% 33%) 0%, 
-      hsl(94 100% 33% / 0.3) 30%, 
-      hsl(0 0% 8%) 100%);
+      hsl(154 100% 30%) 50%, 
+      hsl(154 100% 20%) 100%);
   }
 
   [data-theme="dark"] .bg-glass-card {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
