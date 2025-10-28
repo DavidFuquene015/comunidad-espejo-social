@@ -62,8 +62,8 @@ export default {
         },
       },
       backgroundImage: {
-        'social-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        'button-gradient': 'linear-gradient(45deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        'social-gradient': 'linear-gradient(135deg, #39A900 0%, #007832 50%, #00304D 100%)',
+        'button-gradient': 'linear-gradient(45deg, #39A900 0%, #007832 50%, #00304D 100%)',
       },
       borderRadius: {
         lg: "var(--radius)",
