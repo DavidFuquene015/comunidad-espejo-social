@@ -49,9 +49,17 @@ serve(async (req) => {
       geminiSocket?.send(JSON.stringify(setupMessage));
     };
     
-    geminiSocket.onmessage = (event) => {
-      // Forward Gemini responses to client
-      socket.send(event.data);
+    geminiSocket.onmessage = async (event) => {
+      try {
+        // Ensure we're sending text data, not Blob
+        let messageData = event.data;
+        if (messageData instanceof Blob) {
+          messageData = await messageData.text();
+        }
+        socket.send(messageData);
+      } catch (error) {
+        console.error("Error forwarding message:", error);
+      }
     };
     
     geminiSocket.onerror = (error) => {

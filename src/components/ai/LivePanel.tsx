@@ -41,10 +41,15 @@ const LivePanel = () => {
         });
       };
 
-      ws.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('Received from Gemini:', data);
+  ws.onmessage = async (event) => {
+    try {
+      // Handle both text and Blob data
+      let messageData = event.data;
+      if (messageData instanceof Blob) {
+        messageData = await messageData.text();
+      }
+      const data = JSON.parse(messageData);
+      console.log('Received from Gemini:', data);
           
           // Handle different message types from Gemini
           if (data.serverContent?.modelTurn?.parts) {
@@ -191,11 +196,11 @@ const LivePanel = () => {
     }
   };
 
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     if (isRecording) {
       stopRecording();
     } else {
-      startRecording();
+      await startRecording();
     }
   };
 
@@ -309,12 +314,12 @@ const LivePanel = () => {
               {isRecording ? (
                 <>
                   <MicOff className="w-5 h-5 mr-2" />
-                  Detener Grabación
+                  Detener Conversación
                 </>
               ) : (
                 <>
                   <Mic className="w-5 h-5 mr-2" />
-                  Mantén presionado para hablar
+                  Iniciar Conversación
                 </>
               )}
             </Button>
