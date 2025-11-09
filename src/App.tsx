@@ -15,9 +15,7 @@ import SuggestedFriends from "./pages/SuggestedFriends";
 import PrivateChats from "./pages/PrivateChats";
 import PrivateChat from "./pages/PrivateChat";
 import AcademicLibrary from "./pages/AcademicLibrary";
-import SharedRides from "./pages/SharedRides";
-import CreateRideRequest from "./pages/CreateRideRequest";
-import CreateRideOffer from "./pages/CreateRideOffer";
+import AIAgent from "./pages/AIAgent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -47,9 +45,7 @@ const App = () => (
             <Route path="/chats" element={<PrivateChats />} />
             <Route path="/chat/:chatId" element={<PrivateChat />} />
             <Route path="/library" element={<AcademicLibrary />} />
-            <Route path="/shared-rides" element={<SharedRides />} />
-            <Route path="/create-ride-request" element={<CreateRideRequest />} />
-            <Route path="/create-ride-offer" element={<CreateRideOffer />} />
+            <Route path="/ai-agent" element={<AIAgent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -17,7 +17,7 @@ import {
   LogOut,
   Menu,
   X,
-  Car
+  Bot
 } from 'lucide-react';
 
 const MainNavigation = () => {
@@ -64,7 +64,7 @@ const MainNavigation = () => {
       icon: MessageCircle, 
       label: 'Chats Privados'
     },
-    { path: '/shared-rides', icon: Car, label: 'Viajes Compartidos' },
+    { path: '/ai-agent', icon: Bot, label: 'Agente IA' },
     { path: '/library', icon: BookOpen, label: 'Biblioteca' },
   ];
 
