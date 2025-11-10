@@ -178,6 +178,70 @@ serve(async (req) => {
       });
     }
 
+    // DELETE /posts - Delete post
+    if (method === 'DELETE' && path === '/posts') {
+      const body = await req.json();
+      const { post_id } = body;
+
+      // Verify ownership
+      const { data: post } = await supabaseClient
+        .from('posts')
+        .select('user_id')
+        .eq('id', post_id)
+        .single();
+
+      if (!post || post.user_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { error } = await supabaseClient
+        .from('posts')
+        .delete()
+        .eq('id', post_id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // DELETE /comments - Delete comment
+    if (method === 'DELETE' && path === '/comments') {
+      const body = await req.json();
+      const { comment_id } = body;
+
+      // Verify ownership
+      const { data: comment } = await supabaseClient
+        .from('post_comments')
+        .select('user_id')
+        .eq('id', comment_id)
+        .single();
+
+      if (!comment || comment.user_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { error } = await supabaseClient
+        .from('post_comments')
+        .delete()
+        .eq('id', comment_id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     return new Response(JSON.stringify({ error: 'Not Found' }), {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 
 const Feed = () => {
   const { user } = useAuth();
-  const { posts, loading, createPost, toggleReaction, addComment } = usePosts();
+  const { posts, loading, createPost, toggleReaction, addComment, deletePost, deleteComment } = usePosts();
 
   if (loading) {
     return (
@@ -33,15 +33,17 @@ const Feed = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onToggleReaction={toggleReaction}
-              onAddComment={addComment}
-              currentUserId={user?.id}
-            />
-          ))}
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onToggleReaction={toggleReaction}
+            onAddComment={addComment}
+            onDeletePost={deletePost}
+            onDeleteComment={deleteComment}
+            currentUserId={user?.id}
+          />
+        ))}
         </div>
       )}
     </div>

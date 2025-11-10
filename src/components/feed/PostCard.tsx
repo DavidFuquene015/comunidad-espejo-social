@@ -3,7 +3,13 @@ import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Heart, MessageCircle, Share, Play, Pause } from 'lucide-react';
+import { User, Heart, MessageCircle, Share, Play, Pause, Trash2, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Post } from '@/hooks/usePosts';
@@ -12,10 +18,12 @@ interface PostCardProps {
   post: Post;
   onToggleReaction: (postId: string, emoji: string) => void;
   onAddComment: (postId: string, content: string) => void;
+  onDeletePost: (postId: string) => void;
+  onDeleteComment: (commentId: string) => void;
   currentUserId?: string;
 }
 
-const PostCard = ({ post, onToggleReaction, onAddComment, currentUserId }: PostCardProps) => {
+const PostCard = ({ post, onToggleReaction, onAddComment, onDeletePost, onDeleteComment, currentUserId }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -88,27 +96,49 @@ const PostCard = ({ post, onToggleReaction, onAddComment, currentUserId }: PostC
     <div className="bg-card border border-border rounded-lg shadow-sm">
       {/* Header */}
       <div className="p-6 pb-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10">
-            <AvatarImage 
-              src={post.profiles?.avatar_url || ''} 
-              alt={post.profiles?.full_name || 'Usuario'} 
-            />
-            <AvatarFallback className="bg-primary/10">
-              <User className="w-5 h-5" />
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold text-foreground">
-              {post.profiles?.full_name || 'Usuario'}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(post.created_at), { 
-                addSuffix: true, 
-                locale: es 
-              })}
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Avatar className="w-10 h-10">
+              <AvatarImage 
+                src={post.profiles?.avatar_url || ''} 
+                alt={post.profiles?.full_name || 'Usuario'} 
+              />
+              <AvatarFallback className="bg-primary/10">
+                <User className="w-5 h-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-semibold text-foreground">
+                {post.profiles?.full_name || 'Usuario'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {formatDistanceToNow(new Date(post.created_at), { 
+                  addSuffix: true, 
+                  locale: es 
+                })}
+              </p>
+            </div>
           </div>
+          
+          {/* Delete Post Button */}
+          {currentUserId === post.user_id && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => onDeletePost(post.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Eliminar post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -191,7 +221,7 @@ const PostCard = ({ post, onToggleReaction, onAddComment, currentUserId }: PostC
           {/* Comments List */}
           <div className="space-y-3">
             {post.comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-3">
+              <div key={comment.id} className="flex space-x-3 group">
                 <Avatar className="w-8 h-8">
                   <AvatarImage 
                     src={comment.profiles?.avatar_url || ''} 
@@ -202,11 +232,25 @@ const PostCard = ({ post, onToggleReaction, onAddComment, currentUserId }: PostC
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="bg-accent/50 rounded-lg p-3">
-                    <h4 className="font-medium text-sm text-foreground">
-                      {comment.profiles?.full_name || 'Usuario'}
-                    </h4>
-                    <p className="text-sm text-foreground mt-1">{comment.content}</p>
+                  <div className="bg-accent/50 rounded-lg p-3 relative">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm text-foreground">
+                          {comment.profiles?.full_name || 'Usuario'}
+                        </h4>
+                        <p className="text-sm text-foreground mt-1">{comment.content}</p>
+                      </div>
+                      {currentUserId === comment.user_id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => onDeleteComment(comment.id)}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 ml-3">
                     {formatDistanceToNow(new Date(comment.created_at), { 

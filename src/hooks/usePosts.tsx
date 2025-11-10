@@ -166,6 +166,54 @@ export const usePosts = () => {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('posts-api/posts', {
+        method: 'DELETE',
+        body: { post_id: postId },
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Post eliminado",
+        description: "El post se ha eliminado exitosamente.",
+      });
+
+      fetchPosts();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el post.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteComment = async (commentId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('posts-api/comments', {
+        method: 'DELETE',
+        body: { comment_id: commentId },
+      });
+
+      if (error) throw error;
+      fetchPosts();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el comentario.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
 
@@ -187,6 +235,8 @@ export const usePosts = () => {
     createPost,
     toggleReaction,
     addComment,
+    deletePost,
+    deleteComment,
     refetch: fetchPosts,
   };
 };
