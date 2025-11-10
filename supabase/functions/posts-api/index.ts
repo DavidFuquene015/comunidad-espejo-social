@@ -119,9 +119,19 @@ serve(async (req) => {
     // POST /reactions - Toggle reaction
     if (method === 'POST' && path === '/reactions') {
       const body = await req.json();
-      const { post_id, emoji, remove } = body;
+      const { post_id, emoji } = body;
 
-      if (remove) {
+      // Check if reaction already exists
+      const { data: existingReaction } = await supabaseClient
+        .from('post_reactions')
+        .select('id')
+        .eq('post_id', post_id)
+        .eq('user_id', user.id)
+        .eq('emoji', emoji)
+        .maybeSingle();
+
+      if (existingReaction) {
+        // Reaction exists, remove it
         const { error } = await supabaseClient
           .from('post_reactions')
           .delete()
@@ -131,6 +141,7 @@ serve(async (req) => {
 
         if (error) throw error;
       } else {
+        // Reaction doesn't exist, add it
         const { error } = await supabaseClient
           .from('post_reactions')
           .insert({
