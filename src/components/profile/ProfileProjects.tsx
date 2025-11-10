@@ -16,11 +16,26 @@ const ProfileProjects = ({ projects, onProjectUpdate }: ProfileProjectsProps) =>
 
   const handleDeleteProject = async (projectId: string) => {
     try {
-      const { error } = await supabase.functions.invoke(`profiles-api/projects/${projectId}`, {
-        method: 'DELETE',
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No hay sesión activa');
+      }
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/profiles-api/projects/${projectId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar proyecto');
+      }
 
       toast({
         title: "Proyecto eliminado",
@@ -32,7 +47,7 @@ const ProfileProjects = ({ projects, onProjectUpdate }: ProfileProjectsProps) =>
       console.error('Error deleting project:', error);
       toast({
         title: "Error",
-        description: "No se pudo eliminar el proyecto.",
+        description: error instanceof Error ? error.message : "No se pudo eliminar el proyecto.",
         variant: "destructive",
       });
     }
