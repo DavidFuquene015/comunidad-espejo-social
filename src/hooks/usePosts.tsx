@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+// Base URL for calling Supabase Edge Functions with custom HTTP methods
+const FUNCTIONS_BASE = 'https://nxlmuoozrtqhdqqpdscr.supabase.co/functions/v1';
+
 export interface Post {
   id: string;
   user_id: string;
@@ -48,12 +51,20 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('posts-api/posts', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/posts`, {
         method: 'GET',
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al cargar posts');
+      }
 
+      const data = await res.json();
       setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -95,16 +106,24 @@ export const usePosts = () => {
         else if (mediaFile.type.startsWith('audio/')) mediaType = 'audio';
       }
 
-      const { error } = await supabase.functions.invoke('posts-api/posts', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/posts`, {
         method: 'POST',
-        body: {
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           content: content || null,
           media_url: mediaUrl,
           media_type: mediaType,
-        },
+        }),
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al crear post');
+      }
 
       toast({
         title: "¡Post publicado!",
@@ -130,16 +149,20 @@ export const usePosts = () => {
         .find(p => p.id === postId)?.reactions
         .find(r => r.user_id === user.id && r.emoji === emoji);
 
-      const { error } = await supabase.functions.invoke('posts-api/reactions', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/reactions`, {
         method: 'POST',
-        body: {
-          post_id: postId,
-          emoji,
-          remove: !!existingReaction,
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ post_id: postId, emoji }),
       });
       
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al actualizar reacción');
+      }
 
       fetchPosts();
     } catch (error) {
@@ -151,15 +174,20 @@ export const usePosts = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke('posts-api/comments', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/comments`, {
         method: 'POST',
-        body: {
-          post_id: postId,
-          content,
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ post_id: postId, content }),
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al agregar comentario');
+      }
       fetchPosts();
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -170,12 +198,20 @@ export const usePosts = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke('posts-api/posts', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/posts`, {
         method: 'DELETE',
-        body: { post_id: postId },
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ post_id: postId }),
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al eliminar post');
+      }
       
       toast({
         title: "Post eliminado",
@@ -197,12 +233,20 @@ export const usePosts = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke('posts-api/comments', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${FUNCTIONS_BASE}/posts-api/comments`, {
         method: 'DELETE',
-        body: { comment_id: commentId },
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment_id: commentId }),
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || 'Error al eliminar comentario');
+      }
       fetchPosts();
     } catch (error) {
       console.error('Error deleting comment:', error);
