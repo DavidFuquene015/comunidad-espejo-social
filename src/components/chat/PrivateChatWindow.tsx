@@ -14,7 +14,7 @@ const PrivateChatWindow = () => {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { messages, loading, sendMessage, markMessagesAsRead } = usePrivateMessages(chatId || '');
+  const { messages, loading, sendMessage, editMessage, deleteMessage, markMessagesAsRead } = usePrivateMessages(chatId || '');
   const { markChatAsRead } = usePrivateChats();
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -113,13 +113,15 @@ const PrivateChatWindow = () => {
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" onScrollCapture={handleScroll}>
         <div className="space-y-1">
-          {messages.map((message) => (
-            <PrivateMessageBubble
-              key={message.id}
-              message={message}
-              isOwn={message.sender_id === user?.id}
-            />
-          ))}
+            {messages.map((message) => (
+              <PrivateMessageBubble
+                key={message.id}
+                message={message}
+                isOwn={message.sender_id === user?.id}
+                onEdit={editMessage}
+                onDelete={deleteMessage}
+              />
+            ))}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>

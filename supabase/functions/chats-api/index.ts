@@ -135,16 +135,40 @@ serve(async (req) => {
     if (method === 'GET' && path.startsWith('/messages/')) {
       const chatId = path.split('/')[2];
 
+      // Get chat to determine user role
+      const { data: chat } = await supabaseClient
+        .from('private_chats')
+        .select('user1_id, user2_id')
+        .eq('id', chatId)
+        .single();
+
+      if (!chat) {
+        return new Response(JSON.stringify({ error: 'Chat not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const isSender = (msg: any) => msg.sender_id === user.id;
+
       const { data: messagesData, error } = await supabaseClient
         .from('private_messages')
-        .select('*, read_at')
+        .select('*, read_at, edited_at, deleted_for_sender, deleted_for_receiver, deleted_for_everyone')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
+      // Filter messages based on deletion status
+      const filteredMessages = (messagesData || []).filter((msg: any) => {
+        if (msg.deleted_for_everyone) return true;
+        if (isSender(msg) && msg.deleted_for_sender) return false;
+        if (!isSender(msg) && msg.deleted_for_receiver) return false;
+        return true;
+      });
+
       const messagesWithProfiles = await Promise.all(
-        (messagesData || []).map(async (message) => {
+        filteredMessages.map(async (message: any) => {
           const { data: senderProfile } = await supabaseClient
             .from('profiles')
             .select('full_name, avatar_url')
@@ -197,6 +221,119 @@ serve(async (req) => {
         .is('read_at', null);
 
       if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // PUT /messages/:message_id - Edit message
+    if (method === 'PUT' && path.startsWith('/messages/') && !path.includes('/read/')) {
+      const messageId = path.split('/')[2];
+      const body = await req.json();
+      const { content } = body;
+
+      // Verify message ownership
+      const { data: message } = await supabaseClient
+        .from('private_messages')
+        .select('sender_id')
+        .eq('id', messageId)
+        .single();
+
+      if (!message || message.sender_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { error } = await supabaseClient
+        .from('private_messages')
+        .update({ 
+          content,
+          edited_at: new Date().toISOString() 
+        })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // DELETE /messages/:message_id?deleteFor=me|everyone - Delete message
+    if (method === 'DELETE' && path.startsWith('/messages/')) {
+      const messageId = path.split('/')[2];
+      const deleteFor = url.searchParams.get('deleteFor') || 'me';
+
+      // Get message and chat info
+      const { data: message } = await supabaseClient
+        .from('private_messages')
+        .select('sender_id, chat_id')
+        .eq('id', messageId)
+        .single();
+
+      if (!message) {
+        return new Response(JSON.stringify({ error: 'Message not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Get chat to determine if user is sender or receiver
+      const { data: chat } = await supabaseClient
+        .from('private_chats')
+        .select('user1_id, user2_id')
+        .eq('id', message.chat_id)
+        .single();
+
+      if (!chat) {
+        return new Response(JSON.stringify({ error: 'Chat not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const isSender = message.sender_id === user.id;
+      const isParticipant = chat.user1_id === user.id || chat.user2_id === user.id;
+
+      if (!isParticipant) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (deleteFor === 'everyone') {
+        // Only sender can delete for everyone
+        if (!isSender) {
+          return new Response(JSON.stringify({ error: 'Only sender can delete for everyone' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const { error } = await supabaseClient
+          .from('private_messages')
+          .update({ 
+            deleted_for_everyone: true,
+            content: 'Este mensaje fue eliminado'
+          })
+          .eq('id', messageId);
+
+        if (error) throw error;
+      } else {
+        // Delete for me
+        const updateField = isSender ? 'deleted_for_sender' : 'deleted_for_receiver';
+        
+        const { error } = await supabaseClient
+          .from('private_messages')
+          .update({ [updateField]: true })
+          .eq('id', messageId);
+
+        if (error) throw error;
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
