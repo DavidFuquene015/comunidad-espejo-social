@@ -38,12 +38,23 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user || !chatId) return;
 
     try {
-      const { error } = await supabase.functions.invoke(`chats-api/messages/read/${chatId}`, {
-        method: 'PUT',
-      });
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) return;
 
-      if (error) {
-        console.error('Error marking messages as read:', error);
+      const response = await fetch(
+        `https://nxlmuoozrtqhdqqpdscr.supabase.co/functions/v1/chats-api/messages/read/${chatId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${session.data.session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Error marking messages as read');
         return;
       }
 
@@ -179,13 +190,24 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke(`chats-api/messages/${messageId}`, {
-        method: 'PUT',
-        body: { content: newContent },
-      });
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) return;
 
-      if (error) {
-        console.error('Error editing message:', error);
+      const response = await fetch(
+        `https://nxlmuoozrtqhdqqpdscr.supabase.co/functions/v1/chats-api/messages/${messageId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${session.data.session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content: newContent }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Error editing message');
         toast({
           title: "Error",
           description: "No se pudo editar el mensaje.",
@@ -212,12 +234,23 @@ export const usePrivateMessages = (chatId: string) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.functions.invoke(`chats-api/messages/${messageId}?deleteFor=${deleteFor}`, {
-        method: 'DELETE',
-      });
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) return;
 
-      if (error) {
-        console.error('Error deleting message:', error);
+      const response = await fetch(
+        `https://nxlmuoozrtqhdqqpdscr.supabase.co/functions/v1/chats-api/messages/${messageId}?deleteFor=${deleteFor}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.data.session.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Error deleting message');
         toast({
           title: "Error",
           description: "No se pudo eliminar el mensaje.",
