@@ -175,6 +175,73 @@ export const usePrivateMessages = (chatId: string) => {
     }
   }, [chatId, user]);
 
+  const editMessage = async (messageId: string, newContent: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.functions.invoke(`chats-api/messages/${messageId}`, {
+        method: 'PUT',
+        body: { content: newContent },
+      });
+
+      if (error) {
+        console.error('Error editing message:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo editar el mensaje.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Mensaje editado",
+        description: "El mensaje se editó correctamente.",
+      });
+    } catch (error) {
+      console.error('Error editing message:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo editar el mensaje.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteMessage = async (messageId: string, deleteFor: 'me' | 'everyone' = 'me') => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.functions.invoke(`chats-api/messages/${messageId}?deleteFor=${deleteFor}`, {
+        method: 'DELETE',
+      });
+
+      if (error) {
+        console.error('Error deleting message:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo eliminar el mensaje.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Mensaje eliminado",
+        description: deleteFor === 'everyone' 
+          ? "El mensaje se eliminó para todos."
+          : "El mensaje se eliminó para ti.",
+      });
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el mensaje.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Efecto separado para marcar mensajes como leídos cuando se carga el chat
   useEffect(() => {
     if (chatId && user && messages.length > 0) {
@@ -191,6 +258,8 @@ export const usePrivateMessages = (chatId: string) => {
     messages,
     loading,
     sendMessage,
+    editMessage,
+    deleteMessage,
     markMessagesAsRead,
     refetch: fetchMessages,
   };
