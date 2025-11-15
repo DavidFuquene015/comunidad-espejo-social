@@ -397,6 +397,10 @@ export type Database = {
           chat_id: string
           content: string | null
           created_at: string
+          deleted_for_everyone: boolean | null
+          deleted_for_receiver: boolean | null
+          deleted_for_sender: boolean | null
+          edited_at: string | null
           id: string
           media_type: string | null
           media_url: string | null
@@ -407,6 +411,10 @@ export type Database = {
           chat_id: string
           content?: string | null
           created_at?: string
+          deleted_for_everyone?: boolean | null
+          deleted_for_receiver?: boolean | null
+          deleted_for_sender?: boolean | null
+          edited_at?: string | null
           id?: string
           media_type?: string | null
           media_url?: string | null
@@ -417,6 +425,10 @@ export type Database = {
           chat_id?: string
           content?: string | null
           created_at?: string
+          deleted_for_everyone?: boolean | null
+          deleted_for_receiver?: boolean | null
+          deleted_for_sender?: boolean | null
+          edited_at?: string | null
           id?: string
           media_type?: string | null
           media_url?: string | null

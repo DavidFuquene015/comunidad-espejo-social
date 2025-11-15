@@ -168,11 +168,21 @@ export const usePrivateMessages = (chatId: string) => {
             table: 'private_messages',
             filter: `chat_id=eq.${chatId}`
           },
-          (payload: any) => {
+          async (payload: any) => {
             setMessages(prev => 
               prev.map(msg => 
                 msg.id === payload.new.id 
-                  ? { ...msg, read_at: payload.new.read_at }
+                  ? { 
+                      ...msg, 
+                      content: payload.new.content,
+                      edited_at: payload.new.edited_at,
+                      read_at: payload.new.read_at,
+                      media_url: payload.new.media_url,
+                      media_type: payload.new.media_type,
+                      deleted_for_sender: payload.new.deleted_for_sender,
+                      deleted_for_receiver: payload.new.deleted_for_receiver,
+                      deleted_for_everyone: payload.new.deleted_for_everyone,
+                    }
                   : msg
               )
             );
@@ -216,6 +226,7 @@ export const usePrivateMessages = (chatId: string) => {
         return;
       }
 
+      await fetchMessages();
       toast({
         title: "Mensaje editado",
         description: "El mensaje se editó correctamente.",
@@ -259,6 +270,7 @@ export const usePrivateMessages = (chatId: string) => {
         return;
       }
 
+      await fetchMessages();
       toast({
         title: "Mensaje eliminado",
         description: deleteFor === 'everyone' 
