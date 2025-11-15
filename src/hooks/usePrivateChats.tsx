@@ -28,6 +28,10 @@ export interface PrivateMessage {
   media_type: string | null;
   created_at: string;
   read_at: string | null;
+  edited_at: string | null;
+  deleted_for_sender: boolean | null;
+  deleted_for_receiver: boolean | null;
+  deleted_for_everyone: boolean | null;
   sender: {
     full_name: string | null;
     avatar_url: string | null;
