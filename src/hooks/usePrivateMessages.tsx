@@ -15,15 +15,33 @@ export const usePrivateMessages = (chatId: string) => {
     if (!chatId) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke(`chats-api/messages/${chatId}`, {
-        method: 'GET',
-      });
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) {
+        setMessages([]);
+        setLoading(false);
+        return;
+      }
 
-      if (error) {
-        console.error('Error fetching messages:', error);
+      const response = await fetch(
+        `https://nxlmuoozrtqhdqqpdscr.supabase.co/functions/v1/chats-api/messages/${chatId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session.data.session.access_token}`,
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error('Error fetching messages: HTTP', response.status);
         setMessages([]);
         return;
       }
+
+      const data = await response.json();
 
       setMessages(data || []);
     } catch (error) {
@@ -169,11 +187,11 @@ export const usePrivateMessages = (chatId: string) => {
             filter: `chat_id=eq.${chatId}`
           },
           async (payload: any) => {
-            setMessages(prev => 
-              prev.map(msg => 
-                msg.id === payload.new.id 
-                  ? { 
-                      ...msg, 
+            setMessages((prev) => {
+              const updated = prev.map((msg) =>
+                msg.id === payload.new.id
+                  ? {
+                      ...msg,
                       content: payload.new.content,
                       edited_at: payload.new.edited_at,
                       read_at: payload.new.read_at,
@@ -184,8 +202,16 @@ export const usePrivateMessages = (chatId: string) => {
                       deleted_for_everyone: payload.new.deleted_for_everyone,
                     }
                   : msg
-              )
-            );
+              );
+
+              // Filter out messages deleted "for me"
+              return updated.filter((m) => {
+                const iAmSender = m.sender_id === user?.id;
+                if (iAmSender && m.deleted_for_sender) return false;
+                if (!iAmSender && m.deleted_for_receiver) return false;
+                return true;
+              });
+            });
           }
         )
         .subscribe();
@@ -199,6 +225,15 @@ export const usePrivateMessages = (chatId: string) => {
   const editMessage = async (messageId: string, newContent: string) => {
     if (!user) return;
 
+    // Optimistic UI update
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? { ...m, content: newContent, edited_at: new Date().toISOString() }
+          : m
+      )
+    );
+
     try {
       const session = await supabase.auth.getSession();
       if (!session.data.session) return;
@@ -208,8 +243,9 @@ export const usePrivateMessages = (chatId: string) => {
         {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${session.data.session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            Authorization: `Bearer ${session.data.session.access_token}`,
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ content: newContent }),
@@ -217,32 +253,47 @@ export const usePrivateMessages = (chatId: string) => {
       );
 
       if (!response.ok) {
-        console.error('Error editing message');
+        console.error('Error editing message (server)');
+        await fetchMessages();
         toast({
-          title: "Error",
-          description: "No se pudo editar el mensaje.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'No se pudo editar el mensaje.',
+          variant: 'destructive',
         });
         return;
       }
 
       await fetchMessages();
       toast({
-        title: "Mensaje editado",
-        description: "El mensaje se editó correctamente.",
+        title: 'Mensaje editado',
+        description: 'El mensaje se editó correctamente.',
       });
     } catch (error) {
       console.error('Error editing message:', error);
+      await fetchMessages();
       toast({
-        title: "Error",
-        description: "No se pudo editar el mensaje.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo editar el mensaje.',
+        variant: 'destructive',
       });
     }
   };
 
   const deleteMessage = async (messageId: string, deleteFor: 'me' | 'everyone' = 'me') => {
     if (!user) return;
+
+    // Optimistic UI update
+    setMessages((prev) => {
+      if (deleteFor === 'everyone') {
+        return prev.map((m) =>
+          m.id === messageId
+            ? { ...m, content: 'Este mensaje fue eliminado', deleted_for_everyone: true }
+            : m
+        );
+      }
+      // delete for me => remove locally
+      return prev.filter((m) => m.id !== messageId);
+    });
 
     try {
       const session = await supabase.auth.getSession();
@@ -253,36 +304,43 @@ export const usePrivateMessages = (chatId: string) => {
         {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${session.data.session.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
+            Authorization: `Bearer ${session.data.session.access_token}`,
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bG11b296cnRxaGRxcXBkc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTM3MTIsImV4cCI6MjA2NDAyOTcxMn0.-fm1beUbeN3WpH_FRVoF4J4jbOLsuqGijsf74lcRRkY',
             'Content-Type': 'application/json',
           },
         }
       );
 
       if (!response.ok) {
-        console.error('Error deleting message');
+        console.error('Error deleting message (server)');
+        // revert optimistic update
+        await fetchMessages();
         toast({
-          title: "Error",
-          description: "No se pudo eliminar el mensaje.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'No se pudo eliminar el mensaje.',
+          variant: 'destructive',
         });
         return;
       }
 
+      // Ensure server state is in sync
       await fetchMessages();
       toast({
-        title: "Mensaje eliminado",
-        description: deleteFor === 'everyone' 
-          ? "El mensaje se eliminó para todos."
-          : "El mensaje se eliminó para ti.",
+        title: 'Mensaje eliminado',
+        description:
+          deleteFor === 'everyone'
+            ? 'El mensaje se eliminó para todos.'
+            : 'El mensaje se eliminó para ti.',
       });
     } catch (error) {
       console.error('Error deleting message:', error);
+      // revert optimistic update
+      await fetchMessages();
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el mensaje.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo eliminar el mensaje.',
+        variant: 'destructive',
       });
     }
   };
